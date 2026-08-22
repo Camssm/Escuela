@@ -18,7 +18,7 @@ public class AlumnoServiceImp implements AlumnoService {
 	public List<Alumno> listar() {
 		
 		List<Alumno> registros = this.alumnorepository.findAll();
-		return null;
+		return registros;
 	}
 
 	@Override
