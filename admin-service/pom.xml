@@ -4,23 +4,23 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <!-- Hereda de tu proyecto Padre -->
   <parent>
     <groupId>com.escuela</groupId>
     <artifactId>proyecto-escuela</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath> 
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>registry</artifactId>
-  <name>registry</name>
-  <description>Eureka Discovery Server</description>
+  <artifactId>admin-service</artifactId>
+  <name>admin-service</name>
+  <description>Servidor Spring Boot Admin para Monitoreo</description>
 
   <dependencies>
-    <!-- Starter para Eureka Server -->
+    <!-- Servidor Spring Boot Admin -->
     <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+      <groupId>de.codecentric</groupId>
+      <artifactId>spring-boot-admin-starter-server</artifactId>
+      <version>3.3.0</version>
     </dependency>
 
     <!-- Spring Boot Web -->
@@ -29,18 +29,10 @@
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
-    <!-- Lombok -->
+    <!-- Cliente Eureka para auto-descubrir los demas microservicios -->
     <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <optional>true</optional>
-    </dependency>
-
-    <!-- Test -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
     </dependency>
   </dependencies>
 

@@ -23,6 +23,7 @@
     <spring-cloud.version>2023.0.2</spring-cloud.version>
   </properties>
 
+  <!-- Dependencias globales compartidas estrictamente necesarias -->
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -41,19 +42,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-  <groupId>jakarta.persistence</groupId>
-  <artifactId>jakarta.persistence-api</artifactId>
-</dependency>
-    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-bootstrap</artifactId>
-    </dependency>
   </dependencies>
 
+  <!-- Gestión de versiones centralizada de Spring Cloud -->
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -95,12 +89,13 @@
     </plugins>
   </build>
 
-<modules>
+  <modules>
     <module>Administracion</module>
     <module>Alumno</module>
     <module>Cursos</module>
     <module>gateway</module>
     <module>registry</module>
     <module>springconfigserver</module>
+    <module>admin-service</module>
   </modules>
 </project>
