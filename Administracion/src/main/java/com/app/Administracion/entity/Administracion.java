@@ -4,10 +4,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.Data;
+import jakarta.persistence.Table;
 
 @Entity
-@Data
+@Table(name = "administracion")
 public class Administracion {
 
 	    @Id
@@ -55,6 +55,5 @@ public class Administracion {
 		public void setEspecialidad(String especialidad) {
 			this.especialidad = especialidad;
 		}
-
-	
+		
 }

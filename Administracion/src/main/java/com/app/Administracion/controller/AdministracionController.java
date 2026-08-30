@@ -16,7 +16,7 @@ import com.app.Administracion.service.AdministracionService;
 
 
 @RestController
-@RequestMapping(value = "/api")
+@RequestMapping("/api/administracion")
 public class AdministracionController { @Autowired
 	private AdministracionService administracionService;
 

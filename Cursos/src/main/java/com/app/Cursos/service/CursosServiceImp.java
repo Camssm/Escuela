@@ -23,7 +23,6 @@ public class CursosServiceImp implements CursosService{
 
 	@Override
 	public void agregar(Cursos cursos) {
-		// TODO Auto-generated method stub
-		
+        this.cursosRepository.save(cursos);
 	}
 }

@@ -1,13 +1,14 @@
 package com.app.Alumno.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.Data;
+import jakarta.persistence.Table;
 
 @Entity
-@Data
+@Table(name="alumnos")
 public class Alumno {
 
 	@Id
@@ -16,6 +17,9 @@ public class Alumno {
 	private String nombre;
 	private String apellido;
 	private String gmail;
+	
+	 @Column(name = "curso_id")
+	    private Long cursoId;
 	
 	public Alumno() {
 		super();
@@ -52,6 +56,12 @@ public class Alumno {
 	public void setGmail(String gmail) {
 		this.gmail = gmail;
 	}
-	
+	public Long getCursoId() {
+		return cursoId;
+	}
+
+	public void setCursoId(Long cursoId) {
+		this.cursoId = cursoId;
+	}
 	
 }

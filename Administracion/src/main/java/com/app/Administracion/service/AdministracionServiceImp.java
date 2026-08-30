@@ -23,7 +23,7 @@ public class AdministracionServiceImp implements AdministracionService{
 	}
 	@Override
 	public void agregar( Administracion administracion) {
-		
+		this.administracionRepository.save(administracion);
 		
 	}
 }

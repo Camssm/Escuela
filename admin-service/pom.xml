@@ -16,20 +16,17 @@
   <description>Servidor Spring Boot Admin para Monitoreo</description>
 
   <dependencies>
-    <!-- Servidor Spring Boot Admin -->
     <dependency>
       <groupId>de.codecentric</groupId>
       <artifactId>spring-boot-admin-starter-server</artifactId>
       <version>3.3.0</version>
     </dependency>
 
-    <!-- Spring Boot Web -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
-    <!-- Cliente Eureka para auto-descubrir los demas microservicios -->
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>

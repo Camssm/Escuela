@@ -14,7 +14,7 @@ import com.app.Alumno.entity.Alumno;
 import com.app.Alumno.service.AlumnoService;
 
 @RestController
-@RequestMapping(value = "/api")
+@RequestMapping(value = "/api/alumnos")
 public class AlumnoController {
 
 	@Autowired

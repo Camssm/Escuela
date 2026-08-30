@@ -23,8 +23,7 @@ public class AlumnoServiceImp implements AlumnoService {
 
 	@Override
 	public void agregar(Alumno alumno) {
-		// TODO Auto-generated method stub
-		
+		this.alumnorepository.save(alumno);
 	}
 	
 }

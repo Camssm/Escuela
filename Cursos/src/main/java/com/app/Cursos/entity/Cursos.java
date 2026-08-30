@@ -1,13 +1,14 @@
 package com.app.Cursos.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.Data;
+import jakarta.persistence.Table;
 
 @Entity
-@Data
+@Table(name="cursos")
 public class Cursos {
 
 	@Id
@@ -16,6 +17,9 @@ public class Cursos {
 	private String materia;
 	private String nombreMaestro;
 	private int numSalon;
+	
+	@Column(name = "administracion_id")
+	private long administracionId;
 	
 	public Cursos() {
 		super();
@@ -52,6 +56,13 @@ public class Cursos {
 	public void setNumSalon(int numSalon) {
 		this.numSalon = numSalon;
 	}
-	
+	public long getAdministracionId() {
+		return administracionId;
+	}
+
+	public void setAdministracionId(long administracionId) {
+		this.administracionId = administracionId;
+	}
+
 	
 }
