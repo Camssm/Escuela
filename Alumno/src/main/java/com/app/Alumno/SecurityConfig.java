@@ -1,4 +1,4 @@
-package com.escuela.security.config;
+package com.app.Alumno;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,19 +13,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para APIs REST
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/auth/**",
-                    "/actuator/**",       // <-- Permite el health check de Spring Boot Admin
+                    "/actuator/**",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/swagger-resources/**",
-                    "/webjars/**"
+                    "/webjars/**",
+                    "/h2-console/**"
                 ).permitAll()
                 .anyRequest().authenticated()
-            );
+            )
+            .headers(headers -> headers.frameOptions(frame -> frame.disable())); // Para acceder a la consola H2
 
         return http.build();
     }

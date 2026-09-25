@@ -11,13 +11,11 @@ spring:
   cloud:
     gateway:
       routes:
-        # Ruta libre para Autenticación (Login / Registro)
         - id: security-service
           uri: lb://security-service
           predicates:
             - Path=/auth/**
 
-        # Ruta protegida para el servicio de Alumnos
         - id: alumno-service
           uri: lb://alumno-service
           predicates:
@@ -25,7 +23,6 @@ spring:
           filters:
             - AuthenticationFilter
 
-        # Ruta protegida para el servicio de Cursos
         - id: cursos-service
           uri: lb://cursos-service
           predicates:
