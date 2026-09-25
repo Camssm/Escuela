@@ -1,0 +1,15 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: security-service
+
+jwt:
+  secret: MTBmYTYwYjI2YWQ0YzMxMDdjZGJhMGEyMzVmOGJlYzgwYmZhYzY3YzU4Zjc1OGZkN2NlNjMxMzFkOGJjYmI5MTQ2MzJkNTZhYzEyZmUxZmU2OGRkYzFkMDMzNzQxMzYzNGM2ODUyZjlhMTM0YzgyMTRiODNkMjAwYmE3MDc3MjM=
+  expiration: 86400000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
