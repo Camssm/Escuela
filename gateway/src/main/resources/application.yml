@@ -8,6 +8,30 @@ spring:
     active: dev
   config:
     import: "optional:configserver:http://localhost:8888"
+  cloud:
+    gateway:
+      routes:
+        # Ruta libre para Autenticación (Login / Registro)
+        - id: security-service
+          uri: lb://security-service
+          predicates:
+            - Path=/auth/**
+
+        # Ruta protegida para el servicio de Alumnos
+        - id: alumno-service
+          uri: lb://alumno-service
+          predicates:
+            - Path=/alumnos/**
+          filters:
+            - AuthenticationFilter
+
+        # Ruta protegida para el servicio de Cursos
+        - id: cursos-service
+          uri: lb://cursos-service
+          predicates:
+            - Path=/cursos/**
+          filters:
+            - AuthenticationFilter
 
 eureka:
   client:
