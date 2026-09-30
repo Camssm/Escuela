@@ -2,15 +2,11 @@ package com.escuela.main;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-@EnableDiscoveryClient
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.escuela")
 public class BffApplication {
 
-	public static void main(String[] args) {
-	    SpringApplication app = new SpringApplication(BffApplication.class);
-	    app.run(args);		
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(BffApplication.class, args);
+    }
 }
