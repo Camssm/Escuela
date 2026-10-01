@@ -18,20 +18,28 @@ import com.app.Cursos.service.CursosService;
 @RequestMapping(value = "/api/cursos")
 public class CursosController {
 
-		@Autowired
-		private CursosService cursosService;
-		
-		@RequestMapping(value = "/cursos", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<List<Cursos>> listar() 
-		{
-			return new ResponseEntity<>(cursosService.listar(), HttpStatus.OK);
-		}
-		
-		@RequestMapping(value = "/agregar", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-		public ResponseEntity<List<Cursos>> agregar(@RequestBody Cursos cursos)
-		{
-			cursosService.agregar(cursos);
-			return new ResponseEntity<>(HttpStatus.CREATED);
-		}
-	}
+    @Autowired
+    private CursosService cursosService;
 
+    @RequestMapping(
+        value = "",
+        method = RequestMethod.GET,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<List<Cursos>> listar() {
+        return new ResponseEntity<>(
+            cursosService.listar(),
+            HttpStatus.OK
+        );
+    }
+
+    @RequestMapping(
+        value = "/agregar",
+        method = RequestMethod.PUT,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Void> agregar(@RequestBody Cursos cursos) {
+        cursosService.agregar(cursos);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+}

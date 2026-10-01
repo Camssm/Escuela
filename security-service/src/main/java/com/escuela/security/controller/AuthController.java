@@ -20,7 +20,7 @@ public class AuthController {
     @Autowired
     private JwtProvider jwtProvider;
 
-    @Operation(summary = "Iniciar sesión para obtener el token JWT")
+    @Operation(summary = "Iniciar sesión para obtener el token")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
 

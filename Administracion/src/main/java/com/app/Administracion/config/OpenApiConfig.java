@@ -1,4 +1,4 @@
-package com.escuela.security.config;
+package com.app.Administracion.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -10,6 +10,10 @@ import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
+
 @Configuration
 public class OpenApiConfig {
 
@@ -19,11 +23,10 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
-
                 .info(new Info()
-                        .title("API de Seguridad - Colegio")
+                        .title("API de Administración")
                         .version("1.0")
-                        .description("Autenticación JWT"))
+                        .description("Gestión de administración"))
 
                 .addServersItem(
                         new Server()

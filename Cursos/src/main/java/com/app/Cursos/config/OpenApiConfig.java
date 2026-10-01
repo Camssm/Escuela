@@ -1,4 +1,4 @@
-package com.escuela.security.config;
+package com.app.Cursos.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -19,11 +19,10 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
-
                 .info(new Info()
-                        .title("API de Seguridad - Colegio")
+                        .title("API de Cursos")
                         .version("1.0")
-                        .description("Autenticación JWT"))
+                        .description("Gestión de cursos"))
 
                 .addServersItem(
                         new Server()
