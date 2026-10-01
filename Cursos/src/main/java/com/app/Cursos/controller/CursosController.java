@@ -22,7 +22,7 @@ public class CursosController {
     private CursosService cursosService;
 
     @RequestMapping(
-        value = "",
+        value = "/cursos",
         method = RequestMethod.GET,
         produces = MediaType.APPLICATION_JSON_VALUE
     )
