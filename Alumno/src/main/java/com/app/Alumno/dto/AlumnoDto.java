@@ -30,7 +30,7 @@ public class AlumnoDto implements AlumnoMapper{
 
     @Override
     public Alumno toEntity() {
-        return new Alumno(nombre, apellido, gmail, estado, cursoId);
+        return new Alumno(nombre, apellido, gmail, Estado.ASIGNADO, cursoId);
     }
 		
 

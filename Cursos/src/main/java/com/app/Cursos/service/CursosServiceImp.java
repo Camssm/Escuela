@@ -33,7 +33,6 @@ public class CursosServiceImp implements CursosService {
 		cursosRepository.save(cursosMapper.toEntity());
 	}
 	
-	@Override
 	public CursosDto obtenerPorId(Long id) {
 
 	    Optional<Cursos> cursoOpt = cursosRepository.findById(id);
@@ -49,8 +48,9 @@ public class CursosServiceImp implements CursosService {
 	    cursosDto.setId(curso.getId());
 	    cursosDto.setMateria(curso.getMateria());
 	    cursosDto.setNombreMaestro(curso.getNombreMaestro());
-	    cursosDto.setNumSalon(curso.getNumSalon());
-
+	    cursosDto.setHorario(curso.getHorario());
+	    cursosDto.setCupo(curso.getCupo());
+	    
 	    curso.getAlumnos().forEach(alumno -> {
 	        cursosDto.getAlumnos().add(alumno.getId());
 	    });

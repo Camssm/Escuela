@@ -21,20 +21,22 @@ public class CursosDto implements CursosMapper{
 	private Long id;
 	private String materia;
 	private String nombreMaestro;
-	private int numSalon;
-    
-    private List<Long> alumnos = new ArrayList<>();
+	private Long docenteId;
+	private String horario;
+    private int cupo;
+
+	private List<Long> alumnos = new ArrayList<>();
+
+	@Override
+	public Cursos toEntity() {
+	    return new Cursos(materia, nombreMaestro, horario, cupo);
+	}
 	
     @Override
     public CursosDto toDto() {
         return this;
     }
 
-    @Override
-    public Cursos toEntity() {
-        return new Cursos(materia, nombreMaestro, numSalon);
-    }
-		
 		
 
 	}
