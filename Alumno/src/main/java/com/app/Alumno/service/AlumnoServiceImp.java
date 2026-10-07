@@ -6,9 +6,13 @@ import java.util.List;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
+import com.app.Alumno.Enum.Estado;
 import com.app.Alumno.config.RabbitMQConfig;
 import com.app.Alumno.dto.AlumnoConCursoDto;
+import com.app.Alumno.dto.CursosDto;
 import com.app.Alumno.entity.Alumno;
 import com.app.Alumno.mappers.AlumnoMapper;
 import com.app.Alumno.repository.Alumnorepository;
@@ -20,6 +24,9 @@ public class AlumnoServiceImp implements AlumnoService {
 	@Autowired
 	Alumnorepository alumnorepository;
 
+	@Autowired
+	RestTemplate restTemplate;
+	
 	@Autowired
     RabbitTemplate rabbitTemplate;	
 
@@ -36,31 +43,80 @@ public class AlumnoServiceImp implements AlumnoService {
 	@Override
 	public void agregar(AlumnoMapper alumnoMapper) throws Exception {
 
-	    Alumno nuevoAlumno = alumnorepository.save(alumnoMapper.toEntity());
+	    Alumno alumno = alumnoMapper.toEntity();
 
-	    AlumnoEvent event = new AlumnoEvent();
+	    if (alumno.getEstado() == null) {
 
-	    event.setAlumnoId(nuevoAlumno.getId());
-	    event.setCursoId(nuevoAlumno.getCursoId());
+	        if (alumno.getCursoId() == null) {
+	            alumno.setEstado(Estado.SINASIGNACION);
+	        } else {
+	            alumno.setEstado(Estado.ASIGNADO);
+	        }
+	    }
 
-	    rabbitTemplate.convertAndSend(
-	            RabbitMQConfig.EXCHANGE,
-	            RabbitMQConfig.ROUTING_KEY,
-	            event
-	    );
+	    Alumno nuevoAlumno = alumnorepository.save(alumno);
+
+	    if (nuevoAlumno.getCursoId() != null) {
+
+	        AlumnoEvent event = new AlumnoEvent();
+
+	        event.setAlumnoId(nuevoAlumno.getId());
+	        event.setCursoId(nuevoAlumno.getCursoId());
+
+	        rabbitTemplate.convertAndSend(
+	                RabbitMQConfig.EXCHANGE,
+	                RabbitMQConfig.ROUTING_KEY,
+	                event);
+	    }
 	}
 	
-	 @Override
-	    public AlumnoConCursoDto obtenerConCurso(Long alumnoId) {
-	        Alumno alumno = alumnorepository.findById(alumnoId)
-	                .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + alumnoId));
+	@Override
+	public AlumnoConCursoDto obtenerConCurso(Long alumnoId) {
+	    Alumno alumno = alumnorepository.findById(alumnoId)
+	            .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + alumnoId));
 
-	        AlumnoConCursoDto dto = new AlumnoConCursoDto();
-	        dto.setId(alumno.getId());
-	        dto.setNombre(alumno.getNombre());
-	        dto.setApellido(alumno.getApellido());
-	        dto.setGmail(alumno.getGmail());
+	    AlumnoConCursoDto dto = new AlumnoConCursoDto();
+	    dto.setId(alumno.getId());
+	    dto.setNombre(alumno.getNombre());
+	    dto.setApellido(alumno.getApellido());
+	    dto.setGmail(alumno.getGmail());
+	    dto.setEstado(alumno.getEstado());
 
-	        return dto;
+	    if (alumno.getCursoId() != null) {
+	        try {
+	            CursosDto curso = restTemplate.getForObject(
+	                    "http://MS-CURSOS/api/cursos/" + alumno.getCursoId(),
+	                    CursosDto.class);
+	            dto.setCurso(curso);
+	        } catch (RestClientException e) {
+	        }
 	    }
+	    return dto;
+	}
+	 
+	 @Override
+	 public void editar(AlumnoMapper alumnoMapper) throws Exception {
+	     Alumno datosNuevos = alumnoMapper.toEntity();
+
+	     Alumno existente = alumnorepository.findById(datosNuevos.getId())
+	             .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + datosNuevos.getId()));
+
+	     existente.setNombre(datosNuevos.getNombre());
+	     existente.setApellido(datosNuevos.getApellido());
+	     existente.setGmail(datosNuevos.getGmail());
+	     existente.setCursoId(datosNuevos.getCursoId());
+
+	     alumnorepository.save(existente);
+	 }
+
+	 @Override
+	 public void cambiarEstado(AlumnoMapper alumnoMapper) throws Exception {
+	     Alumno datos = alumnoMapper.toEntity();
+
+	     Alumno existente = alumnorepository.findById(datos.getId())
+	             .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + datos.getId()));
+
+	     existente.setEstado(datos.getEstado());
+	     alumnorepository.save(existente);
+	 }
 }

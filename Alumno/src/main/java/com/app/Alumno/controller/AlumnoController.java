@@ -46,4 +46,16 @@ public class AlumnoController {
     public ResponseEntity<AlumnoConCursoDto> obtenerConCurso(@PathVariable Long id) {
         return ResponseEntity.ok(alumnoService.obtenerConCurso(id));
     }
+	
+	@RequestMapping(value = "/editar", method = RequestMethod.PUT)
+	public ResponseEntity<Void> editar(@RequestBody AlumnoDto alumnoDto) throws Exception {
+	    alumnoService.editar(alumnoDto);
+	    return ResponseEntity.ok().build();
+	}
+
+	@RequestMapping(value = "/cambiar-estado", method = RequestMethod.PUT)
+	public ResponseEntity<Void> cambiarEstado(@RequestBody AlumnoDto alumnoDto) throws Exception {
+	    alumnoService.cambiarEstado(alumnoDto);
+	    return ResponseEntity.ok().build();
+	}
 }

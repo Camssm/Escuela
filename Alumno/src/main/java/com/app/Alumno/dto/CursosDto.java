@@ -11,5 +11,6 @@ public class CursosDto {
 	private Long id;
 	private String materia;
 	private String nombreMaestro;
-	private int numSalon;
+	private Long docenteId;
+	private String horario;
 }
