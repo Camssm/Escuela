@@ -31,7 +31,6 @@ public class AlumnoServiceImp implements AlumnoService {
     @Autowired
     RabbitTemplate rabbitTemplate;
 
-
     @Override
     public List<AlumnoDto> listar() throws Exception {
 
@@ -49,12 +48,12 @@ public class AlumnoServiceImp implements AlumnoService {
             dto.setGmail(alumno.getGmail());
             dto.setEstado(alumno.getEstado());
             dto.setCursoId(alumno.getCursoId());
+
             dtos.add(dto);
         }
 
         return dtos;
     }
-
 
     @Override
     public void agregar(IMapper<Alumno> mapper) throws Exception {
@@ -84,7 +83,6 @@ public class AlumnoServiceImp implements AlumnoService {
             );
         }
     }
-
 
     @Override
     public AlumnoConCursoDto obtenerConCurso(Long alumnoId) {
@@ -123,7 +121,6 @@ public class AlumnoServiceImp implements AlumnoService {
         return dto;
     }
 
-
     @Override
     public void editar(IMapper<Alumno> mapper) throws Exception {
 
@@ -144,7 +141,6 @@ public class AlumnoServiceImp implements AlumnoService {
 
         alumnorepository.save(existente);
     }
-
 
     @Override
     public void cambiarEstado(IMapper<Alumno> mapper) throws Exception {

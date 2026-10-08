@@ -98,5 +98,5 @@
     <module>springconfigserver</module>
     <module>admin-service</module>
     <module>security-service</module>
-  </modules>
+</modules>
 </project>

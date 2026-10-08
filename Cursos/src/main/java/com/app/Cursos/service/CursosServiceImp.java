@@ -17,7 +17,6 @@ public class CursosServiceImp implements CursosService {
     @Autowired
     CursosRepository cursosRepository;
 
-
     @Override
     public void agregar(IMapper<Cursos> mapper) throws Exception {
 
@@ -25,7 +24,6 @@ public class CursosServiceImp implements CursosService {
 
         cursosRepository.save(curso);
     }
-
 
     @Override
     public List<CursosDto> listar() throws Exception {
@@ -51,7 +49,6 @@ public class CursosServiceImp implements CursosService {
         return dtos;
     }
 
-
     @Override
     public CursosDto obtenerPorId(Long id) {
 
@@ -74,7 +71,6 @@ public class CursosServiceImp implements CursosService {
         return dto;
     }
 
-
     @Override
     public void editar(IMapper<Cursos> mapper) throws Exception {
 
@@ -96,7 +92,6 @@ public class CursosServiceImp implements CursosService {
 
         cursosRepository.save(existente);
     }
-
 
     @Override
     public void eliminar(Long id) throws Exception {

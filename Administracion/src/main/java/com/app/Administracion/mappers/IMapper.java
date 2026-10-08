@@ -1,8 +1,7 @@
 package com.app.Administracion.mappers;
 
-public interface IMapper<D, E> {
+public interface IMapper<E> {
 
-    public D toDto();
+    E mapperTo();
 
-    public E toEntity();
 }

@@ -3,6 +3,8 @@ package com.app.Cursos.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.app.Cursos.dto.CursosDto;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -31,83 +33,82 @@ public class Cursos {
     @OneToMany(mappedBy = "curso")
     private List<Alumno> alumnos = new ArrayList<>();
 
-	public Cursos() {
-		super();
-	}
+    public Cursos() {
+        super();
+    }
 
-	public Cursos(Long id, String materia, String nombreMaestro, String horario, int cupo) {
-		super();
-		this.id = id;
-		this.materia = materia;
-		this.nombreMaestro = nombreMaestro;
-		this.horario = horario;
-		this.cupo = cupo;
-	}
+    public Cursos(Long id, String materia, String nombreMaestro, String horario, int cupo) {
+        super();
+        this.id = id;
+        this.materia = materia;
+        this.nombreMaestro = nombreMaestro;
+        this.horario = horario;
+        this.cupo = cupo;
+    }
 
-	public Cursos(String materia, String nombreMaestro, String horario, int cupo) {
-		super();
-		this.materia = materia;
-		this.nombreMaestro = nombreMaestro;
-		this.horario = horario;
-		this.cupo = cupo;
+    public Cursos(String materia, String nombreMaestro, String horario, int cupo) {
+        super();
+        this.materia = materia;
+        this.nombreMaestro = nombreMaestro;
+        this.horario = horario;
+        this.cupo = cupo;
+    }
 
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public Long getId() { 
-		return id; 
-		}
-	
-	public void setId(Long id) { 
-		this.id = id; 
-		}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getMateria() { 
-		return materia; 
-		}
-	
-	public void setMateria(String materia) { 
-		this.materia = materia; 
-		}
+    public String getMateria() {
+        return materia;
+    }
 
-	public String getNombreMaestro() { 
-		return nombreMaestro; 
-		}
-	
-	public void setNombreMaestro(String nombreMaestro) { 
-		this.nombreMaestro = nombreMaestro; 
-		}
+    public void setMateria(String materia) {
+        this.materia = materia;
+    }
 
-	public Long getDocenteId() { 
-		return docenteId; 
-		}
-	
-	public void setDocenteId(Long docenteId) { 
-		this.docenteId = docenteId; 
-		}
+    public String getNombreMaestro() {
+        return nombreMaestro;
+    }
 
-	public String getHorario() { 
-		return horario; 
-		}
-	
-	public void setHorario(String horario) { 
-		this.horario = horario; 
-		}
-	
-	public int getCupo() {
-		return cupo;
-	}
+    public void setNombreMaestro(String nombreMaestro) {
+        this.nombreMaestro = nombreMaestro;
+    }
 
-	public void setCupo(int cupo) {
-		this.cupo = cupo;
-	}
+    public Long getDocenteId() {
+        return docenteId;
+    }
 
-	public List<Alumno> getAlumnos() { 
-		return alumnos; 
-		}
-	
-	public void setAlumnos(List<Alumno> alumnos) { 
-		this.alumnos = alumnos; 
-		}
+    public void setDocenteId(Long docenteId) {
+        this.docenteId = docenteId;
+    }
+
+    public String getHorario() {
+        return horario;
+    }
+
+    public void setHorario(String horario) {
+        this.horario = horario;
+    }
+
+    public int getCupo() {
+        return cupo;
+    }
+
+    public void setCupo(int cupo) {
+        this.cupo = cupo;
+    }
+
+    public List<Alumno> getAlumnos() {
+        return alumnos;
+    }
+
+    public void setAlumnos(List<Alumno> alumnos) {
+        this.alumnos = alumnos;
+    }
 
     public void addAlumno(Alumno alumno) {
         alumnos.add(alumno);

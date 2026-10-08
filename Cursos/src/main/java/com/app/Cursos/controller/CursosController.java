@@ -25,7 +25,6 @@ public class CursosController {
     @Autowired
     private CursosService cursosService;
 
-
     @RequestMapping(
         value = "/cursos",
         method = RequestMethod.GET
@@ -36,7 +35,6 @@ public class CursosController {
             cursosService.listar()
         );
     }
-
 
     @RequestMapping(
         value = "/agregar",
@@ -50,7 +48,6 @@ public class CursosController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<CursosDto> obtenerPorId(
             @PathVariable Long id) {
@@ -59,7 +56,6 @@ public class CursosController {
             cursosService.obtenerPorId(id)
         );
     }
-
 
     @RequestMapping(
         value = "/editar",
@@ -73,8 +69,7 @@ public class CursosController {
         return ResponseEntity.ok().build();
     }
 
-
-    @DeleteMapping("/eliminar")
+    @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<Void> eliminar(
             @PathVariable Long id) throws Exception {
 

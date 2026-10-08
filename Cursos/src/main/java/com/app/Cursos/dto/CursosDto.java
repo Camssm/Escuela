@@ -1,8 +1,5 @@
 package com.app.Cursos.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.stereotype.Component;
 
 import com.app.Cursos.entity.Cursos;

@@ -1,20 +1,14 @@
 package com.app.Administracion.dto;
 
-import org.springframework.stereotype.Component;
-
 import com.app.Administracion.Enum.Cargo;
-import com.app.Administracion.entity.Administracion;
-import com.app.Administracion.mappers.AdministracionMapper;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Component
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class AdministracionDto implements AdministracionMapper{
+public class AdministracionDto {
 
     private int id;
     private String nombre;
@@ -22,18 +16,4 @@ public class AdministracionDto implements AdministracionMapper{
     private String dni;
     private String email;
     private Cargo cargo;
-    
-    @Override
-    public AdministracionDto toDto() {
-        return this;
-    }
-
-    @Override
-    public Administracion toEntity() {
-        return new Administracion(nombre, apellido, dni, email, cargo);
-    }
-		
-		
-
-	}
-
+}

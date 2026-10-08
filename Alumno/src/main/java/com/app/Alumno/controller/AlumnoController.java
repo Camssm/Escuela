@@ -26,7 +26,6 @@ public class AlumnoController {
     @Autowired
     private AlumnoService alumnoService;
 
-
     @RequestMapping(
         value = "/alumnos",
         method = RequestMethod.GET
@@ -35,7 +34,6 @@ public class AlumnoController {
 
         return ResponseEntity.ok(alumnoService.listar());
     }
-
 
     @RequestMapping(
         value = "/agregar",
@@ -49,7 +47,6 @@ public class AlumnoController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-
     @GetMapping("/{id}/con-curso")
     public ResponseEntity<AlumnoConCursoDto> obtenerConCurso(
             @PathVariable Long id) {
@@ -58,7 +55,6 @@ public class AlumnoController {
             alumnoService.obtenerConCurso(id)
         );
     }
-
 
     @RequestMapping(
         value = "/editar",
@@ -71,7 +67,6 @@ public class AlumnoController {
 
         return ResponseEntity.ok().build();
     }
-
 
     @RequestMapping(
         value = "/cambiar-estado",

@@ -7,11 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CursosDto {
 
+public class NotaDto {
     private Long id;
-    private String materia;
-    private String nombreMaestro;
-    private Long docenteId;
-    private String horario;
+    private Double valor;
+    private Long evaluacionId;
+    private Long alumnoId;
 }
