@@ -1,8 +1,6 @@
 package com.app.Alumno.entity;
 
 import com.app.Alumno.Enum.Estado;
-import com.app.Alumno.dto.AlumnoDto;
-import com.app.Alumno.mappers.AlumnoMapper;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,8 +13,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name="alumnos")
-public class Alumno implements AlumnoMapper {
-
+public class Alumno {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -102,11 +99,5 @@ public class Alumno implements AlumnoMapper {
 		this.cursoId = cursoId;
 	}
 	
-	public AlumnoDto toDto() {
-	    return new AlumnoDto(id, nombre, apellido, gmail, estado, cursoId);
-	}
 
-    public Alumno toEntity() {
-        return this;
-    }
 }

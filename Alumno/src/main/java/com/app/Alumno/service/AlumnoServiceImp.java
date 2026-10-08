@@ -12,108 +12,155 @@ import org.springframework.web.client.RestTemplate;
 import com.app.Alumno.Enum.Estado;
 import com.app.Alumno.config.RabbitMQConfig;
 import com.app.Alumno.dto.AlumnoConCursoDto;
+import com.app.Alumno.dto.AlumnoDto;
 import com.app.Alumno.dto.CursosDto;
 import com.app.Alumno.entity.Alumno;
-import com.app.Alumno.mappers.AlumnoMapper;
+import com.app.Alumno.mappers.IMapper;
 import com.app.Alumno.repository.Alumnorepository;
 import com.app.Alumno.senders.AlumnoEvent;
 
 @Service
 public class AlumnoServiceImp implements AlumnoService {
-	
-	@Autowired
-	Alumnorepository alumnorepository;
 
-	@Autowired
-	RestTemplate restTemplate;
-	
-	@Autowired
-    RabbitTemplate rabbitTemplate;	
+    @Autowired
+    Alumnorepository alumnorepository;
 
-	@Override
-	public List<AlumnoMapper> listar() throws Exception {
-		List<Alumno> registros = alumnorepository.findAll();
-        List<AlumnoMapper> mappers = new ArrayList<>();
-        for (Alumno registro : registros) {
-            mappers.add(registro);
+    @Autowired
+    RestTemplate restTemplate;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+
+
+    @Override
+    public List<AlumnoDto> listar() throws Exception {
+
+        List<Alumno> registros = alumnorepository.findAll();
+
+        List<AlumnoDto> dtos = new ArrayList<>();
+
+        for (Alumno alumno : registros) {
+
+            AlumnoDto dto = new AlumnoDto();
+
+            dto.setId(alumno.getId());
+            dto.setNombre(alumno.getNombre());
+            dto.setApellido(alumno.getApellido());
+            dto.setGmail(alumno.getGmail());
+            dto.setEstado(alumno.getEstado());
+            dto.setCursoId(alumno.getCursoId());
+            dtos.add(dto);
         }
-        return mappers;
+
+        return dtos;
     }
 
-	@Override
-	public void agregar(AlumnoMapper alumnoMapper) throws Exception {
 
-	    Alumno alumno = alumnoMapper.toEntity();
+    @Override
+    public void agregar(IMapper<Alumno> mapper) throws Exception {
 
-	    if (alumno.getCursoId() == null) {
-	        alumno.setEstado(Estado.SINASIGNACION);
-	    } else {
-	        alumno.setEstado(Estado.ASIGNADO);
-	    }
+        Alumno alumno = mapper.mapperTo();
 
-	    Alumno nuevoAlumno = alumnorepository.save(alumno);
+        if (alumno.getCursoId() == null || alumno.getCursoId() == 0) {
+            alumno.setCursoId(null);
+            alumno.setEstado(Estado.SINASIGNACION);
+        } else {
+            alumno.setEstado(Estado.ASIGNADO);
+        }
 
-	    if (nuevoAlumno.getCursoId() != null) {
+        Alumno nuevoAlumno = alumnorepository.save(alumno);
 
-	        AlumnoEvent event = new AlumnoEvent();
+        if (nuevoAlumno.getCursoId() != null) {
 
-	        event.setAlumnoId(nuevoAlumno.getId());
-	        event.setCursoId(nuevoAlumno.getCursoId());
+            AlumnoEvent event = new AlumnoEvent();
 
-	        rabbitTemplate.convertAndSend(
-	                RabbitMQConfig.EXCHANGE,
-	                RabbitMQConfig.ROUTING_KEY,
-	                event);
-	    }
-	}
-	
-	@Override
-	public AlumnoConCursoDto obtenerConCurso(Long alumnoId) {
-	    Alumno alumno = alumnorepository.findById(alumnoId)
-	            .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + alumnoId));
+            event.setAlumnoId(nuevoAlumno.getId());
+            event.setCursoId(nuevoAlumno.getCursoId());
 
-	    AlumnoConCursoDto dto = new AlumnoConCursoDto();
-	    dto.setId(alumno.getId());
-	    dto.setNombre(alumno.getNombre());
-	    dto.setApellido(alumno.getApellido());
-	    dto.setGmail(alumno.getGmail());
-	    dto.setEstado(alumno.getEstado());
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.EXCHANGE,
+                    RabbitMQConfig.ROUTING_KEY,
+                    event
+            );
+        }
+    }
 
-	    if (alumno.getCursoId() != null) {
-	        try {
-	            CursosDto curso = restTemplate.getForObject(
-	                    "http://MS-CURSOS/api/cursos/" + alumno.getCursoId(),
-	                    CursosDto.class);
-	            dto.setCurso(curso);
-	        } catch (RestClientException e) {
-	        }
-	    }
-	    return dto;
-	}
-	 
-	 @Override
-	 public void editar(AlumnoMapper alumnoMapper) throws Exception {
-	     Alumno datosNuevos = alumnoMapper.toEntity();
 
-	     Alumno existente = alumnorepository.findById(datosNuevos.getId())
-	             .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + datosNuevos.getId()));
+    @Override
+    public AlumnoConCursoDto obtenerConCurso(Long alumnoId) {
 
-	     existente.setNombre(datosNuevos.getNombre());
-	     existente.setApellido(datosNuevos.getApellido());
-	     existente.setGmail(datosNuevos.getGmail());
-	     existente.setCursoId(datosNuevos.getCursoId());
+        Alumno alumno = alumnorepository.findById(alumnoId)
+                .orElseThrow(() ->
+                    new RuntimeException(
+                        "Alumno no encontrado con id: " + alumnoId
+                    )
+                );
 
-	     alumnorepository.save(existente);
-	 }
+        AlumnoConCursoDto dto = new AlumnoConCursoDto();
 
-	 @Override
-	 public void cambiarEstado(AlumnoMapper alumnoMapper) throws Exception {
-	     Alumno datos = alumnoMapper.toEntity();
+        dto.setId(alumno.getId());
+        dto.setNombre(alumno.getNombre());
+        dto.setApellido(alumno.getApellido());
+        dto.setGmail(alumno.getGmail());
+        dto.setEstado(alumno.getEstado());
 
-	     Alumno existente = alumnorepository.findById(datos.getId())
-	             .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + datos.getId()));
+        if (alumno.getCursoId() != null) {
 
-	     existente.setEstado(datos.getEstado());
-	     alumnorepository.save(existente);
-	 }
+            try {
+
+                CursosDto curso = restTemplate.getForObject(
+                        "http://MS-CURSOS/api/cursos/"
+                        + alumno.getCursoId(),
+                        CursosDto.class
+                );
+
+                dto.setCurso(curso);
+
+            } catch (RestClientException e) {
+            }
+        }
+
+        return dto;
+    }
+
+
+    @Override
+    public void editar(IMapper<Alumno> mapper) throws Exception {
+
+        Alumno datosNuevos = mapper.mapperTo();
+
+        Alumno existente = alumnorepository.findById(datosNuevos.getId())
+                .orElseThrow(() ->
+                    new RuntimeException(
+                        "Alumno no encontrado con id: "
+                        + datosNuevos.getId()
+                    )
+                );
+
+        existente.setNombre(datosNuevos.getNombre());
+        existente.setApellido(datosNuevos.getApellido());
+        existente.setGmail(datosNuevos.getGmail());
+        existente.setCursoId(datosNuevos.getCursoId());
+
+        alumnorepository.save(existente);
+    }
+
+
+    @Override
+    public void cambiarEstado(IMapper<Alumno> mapper) throws Exception {
+
+        Alumno datos = mapper.mapperTo();
+
+        Alumno existente = alumnorepository.findById(datos.getId())
+                .orElseThrow(() ->
+                    new RuntimeException(
+                        "Alumno no encontrado con id: "
+                        + datos.getId()
+                    )
+                );
+
+        existente.setEstado(datos.getEstado());
+
+        alumnorepository.save(existente);
+    }
 }

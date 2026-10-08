@@ -3,10 +3,6 @@ package com.app.Cursos.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.app.Cursos.dto.CursosDto;
-import com.app.Cursos.mappers.CursosMapper;
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,23 +12,24 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="cursos")
-public class Cursos implements CursosMapper {
+@Table(name = "cursos")
+public class Cursos {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	private String materia;
-	private String nombreMaestro;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(name = "docente_id")
-	private Long docenteId;
+    private String materia;
+    private String nombreMaestro;
 
-	private String horario;
-	private int cupo;
-	
-	@OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Alumno> alumnos = new ArrayList<>();
+    @Column(name = "docente_id")
+    private Long docenteId;
+
+    private String horario;
+    private int cupo;
+
+    @OneToMany(mappedBy = "curso")
+    private List<Alumno> alumnos = new ArrayList<>();
 
 	public Cursos() {
 		super();
@@ -111,14 +108,6 @@ public class Cursos implements CursosMapper {
 	public void setAlumnos(List<Alumno> alumnos) { 
 		this.alumnos = alumnos; 
 		}
-
-	public CursosDto toDto() {
-	    return new CursosDto(id, materia, nombreMaestro, docenteId, horario, cupo, new ArrayList<>());
-	}
-	
-    public Cursos toEntity() {
-        return this;
-    }
 
     public void addAlumno(Alumno alumno) {
         alumnos.add(alumno);

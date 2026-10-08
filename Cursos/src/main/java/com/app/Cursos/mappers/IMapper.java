@@ -1,8 +1,6 @@
 package com.app.Cursos.mappers;
 
-public interface IMapper<D, E> {
+public interface IMapper<E> {
 
-    public D toDto();
-
-    public E toEntity();
+    E mapperTo();
 }

@@ -3,18 +3,19 @@ package com.app.Alumno.service;
 import java.util.List;
 
 import com.app.Alumno.dto.AlumnoConCursoDto;
-import com.app.Alumno.mappers.AlumnoMapper;
+import com.app.Alumno.dto.AlumnoDto;
+import com.app.Alumno.entity.Alumno;
+import com.app.Alumno.mappers.IMapper;
 
 public interface AlumnoService {
-	
-    List<AlumnoMapper> listar() throws Exception;
-    
-    void agregar(AlumnoMapper alumnoMapper) throws Exception;
+
+    void agregar(IMapper<Alumno> mapper) throws Exception;
+
+    List<AlumnoDto> listar() throws Exception;
 
     AlumnoConCursoDto obtenerConCurso(Long alumnoId);
-    
-    void editar(AlumnoMapper alumnoMapper) throws Exception;
 
-    void cambiarEstado(AlumnoMapper alumnoMapper) throws Exception;
+    void editar(IMapper<Alumno> mapper) throws Exception;
 
+    void cambiarEstado(IMapper<Alumno> mapper) throws Exception;
 }
