@@ -45,13 +45,10 @@ public class AlumnoServiceImp implements AlumnoService {
 
 	    Alumno alumno = alumnoMapper.toEntity();
 
-	    if (alumno.getEstado() == null) {
-
-	        if (alumno.getCursoId() == null) {
-	            alumno.setEstado(Estado.SINASIGNACION);
-	        } else {
-	            alumno.setEstado(Estado.ASIGNADO);
-	        }
+	    if (alumno.getCursoId() == null) {
+	        alumno.setEstado(Estado.SINASIGNACION);
+	    } else {
+	        alumno.setEstado(Estado.ASIGNADO);
 	    }
 
 	    Alumno nuevoAlumno = alumnorepository.save(alumno);
