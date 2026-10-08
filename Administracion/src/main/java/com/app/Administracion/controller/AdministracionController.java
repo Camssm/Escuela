@@ -10,10 +10,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.Administracion.dto.AdministracionDto;
-import com.app.Administracion.mappers.AdministracionMapper;
+import com.app.Administracion.dto.AdministracionAltaDto;
+import com.app.Administracion.dto.AdministracionEditarDto;
+import com.app.Administracion.entity.Administracion;
 import com.app.Administracion.service.AdministracionService;
 
 @RestController
@@ -23,19 +26,56 @@ public class AdministracionController {
     @Autowired
     private AdministracionService administracionService;
 
-    @RequestMapping(value = "/Administracion", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+        value = "/Administracion",
+        method = RequestMethod.GET,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<List<AdministracionDto>> listar() throws Exception {
-        List<AdministracionMapper> mappers = administracionService.listar();
-        List<AdministracionDto> dtos = new ArrayList<AdministracionDto>();
-        for (AdministracionMapper mapper : mappers) {
-            dtos.add(mapper.toDto());
+        List<Administracion> administraciones = administracionService.listar();
+        List<AdministracionDto> dtos = new ArrayList<>();
+        for (Administracion administracion : administraciones) {
+            AdministracionDto dto = new AdministracionDto(
+                    administracion.getId(),
+                    administracion.getNombre(),
+                    administracion.getApellido(),
+                    administracion.getDni(),
+                    administracion.getEmail(),
+                    administracion.getCargo()
+            );
+            dtos.add(dto);
         }
         return ResponseEntity.ok(dtos);
     }
 
     @RequestMapping(value = "/agregar", method = RequestMethod.PUT)
-    public ResponseEntity<?> agregar(@RequestBody AdministracionDto administracionDto) throws Exception {
-        administracionService.agregar(administracionDto);
+    	public ResponseEntity<?> agregar(@RequestBody AdministracionAltaDto administracionDto)throws Exception {
+    	
+    	administracionService.agregar(administracionDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @RequestMapping(value = "/buscar", method = RequestMethod.GET)
+    	public ResponseEntity<AdministracionDto> buscar(
+            
+    @RequestParam int id) throws Exception {
+        return administracionService.obtenerPorId(id)
+                .map(administracion -> new AdministracionDto(
+                        administracion.getId(),
+                        administracion.getNombre(),
+                        administracion.getApellido(),
+                        administracion.getDni(),
+                        administracion.getEmail(),
+                        administracion.getCargo()
+                ))
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    @RequestMapping(value = "/editar", method = RequestMethod.PUT)
+    public ResponseEntity<?> editar(@RequestBody AdministracionEditarDto administracionDto)
+            throws Exception {
+        administracionService.editar(administracionDto);
+
+        return ResponseEntity.ok().build();
     }
 }

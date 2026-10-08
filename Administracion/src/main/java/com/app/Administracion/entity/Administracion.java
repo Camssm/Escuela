@@ -1,8 +1,6 @@
 package com.app.Administracion.entity;
 
 import com.app.Administracion.Enum.Cargo;
-import com.app.Administracion.dto.AdministracionDto;
-import com.app.Administracion.mappers.AdministracionMapper;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,7 +12,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "administracion")
-public class Administracion implements AdministracionMapper{
+public class Administracion {
 
 	    @Id
 		@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -87,13 +85,5 @@ public class Administracion implements AdministracionMapper{
 		public void setCargo(Cargo cargo) {
 			this.cargo = cargo;
 		}
-		
-		public AdministracionDto toDto() {
-	        return new AdministracionDto(id, nombre, apellido, dni, email, cargo);
-		}
-
-		    public Administracion toEntity() {
-		        return this;
-		    }
 
 }

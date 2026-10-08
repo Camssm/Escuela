@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class RabbitMQAdministracionConfig {
+public class RabbitMQConsumerConfig {
 
     public static final String EXCHANGE = "administracion.exchange";
     public static final String QUEUE = "administracion.alumno.queue";

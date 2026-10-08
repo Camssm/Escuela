@@ -1,11 +1,18 @@
 package com.app.Administracion.service;
 
 import java.util.List;
-import com.app.Administracion.mappers.AdministracionMapper;
+import java.util.Optional;
+
+import com.app.Administracion.entity.Administracion;
+import com.app.Administracion.mappers.IMapper;
 
 public interface AdministracionService {
 
-    void agregar(AdministracionMapper administracionMapper) throws Exception;
+    void agregar(IMapper<Administracion> mapper) throws Exception;
 
-    List<AdministracionMapper> listar() throws Exception;
+    List<Administracion> listar() throws Exception;
+
+    Optional<Administracion> obtenerPorId(int id) throws Exception;
+
+    void editar(IMapper<Administracion> mapper) throws Exception;
 }
