@@ -6,6 +6,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.http.HttpStatus;
+import com.app.Administracion.exception.BusinessException;
+import com.app.Administracion.exception.RequestException;
+
 import com.app.Administracion.config.RabbitMQConfig;
 import com.app.Administracion.entity.Administracion;
 import com.app.Administracion.mappers.IMapper;
@@ -27,6 +31,10 @@ public class AdministracionServiceImp implements AdministracionService {
     public void agregar(IMapper<Administracion> mapper) throws Exception {
 
         Administracion guardar = mapper.mapperTo();
+
+        if (guardar.getCargo() == null) {
+            throw new RequestException("P-400", "El cargo es obligatorio");
+        }
 
         guardar = administracionRepository.save(guardar);
 
@@ -58,8 +66,14 @@ public class AdministracionServiceImp implements AdministracionService {
     @Override
     public void editar(IMapper<Administracion> mapper) throws Exception {
 
-        Administracion administracion = mapper.mapperTo();
+    	Administracion administracion = mapper.mapperTo();
 
-        administracionRepository.save(administracion);
+    	if (!administracionRepository.existsById(administracion.getId())) {
+    	    throw new BusinessException(
+    	            "P-404", HttpStatus.NOT_FOUND,
+    	            "Administrativo no encontrado con id: " + administracion.getId());
+    	}
+
+    	administracionRepository.save(administracion);
     }
 }

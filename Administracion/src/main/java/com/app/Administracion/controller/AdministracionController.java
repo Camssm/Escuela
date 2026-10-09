@@ -3,6 +3,7 @@ package com.app.Administracion.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.app.Administracion.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -66,8 +67,9 @@ public class AdministracionController {
                         administracion.getCargo()
                 ))
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
+                .orElseThrow(() -> new BusinessException(
+                        "P-404", HttpStatus.NOT_FOUND,
+                        "Administrativo no encontrado con id: " + id));    }
 
     @RequestMapping(value = "/editar", method = RequestMethod.PUT)
     public ResponseEntity<?> editar(@RequestBody AdministracionEditarDto administracionDto) throws Exception {
