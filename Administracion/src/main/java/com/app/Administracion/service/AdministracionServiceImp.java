@@ -1,12 +1,17 @@
 package com.app.Administracion.service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.http.HttpStatus;
+import com.app.Administracion.exception.BusinessException;
+import com.app.Administracion.exception.RequestException;
+
 import com.app.Administracion.config.RabbitMQConfig;
+import com.app.Administracion.dto.AdministracionDto;
 import com.app.Administracion.entity.Administracion;
 import com.app.Administracion.mappers.IMapper;
 import com.app.Administracion.repository.AdministracionRepository;
@@ -28,6 +33,10 @@ public class AdministracionServiceImp implements AdministracionService {
 
         Administracion guardar = mapper.mapperTo();
 
+        if (guardar.getCargo() == null) {
+            throw new RequestException("P-400", "El cargo es obligatorio");
+        }
+
         guardar = administracionRepository.save(guardar);
 
         AdministracionEvent event = new AdministracionEvent();
@@ -46,20 +55,62 @@ public class AdministracionServiceImp implements AdministracionService {
     }
 
     @Override
-    public List<Administracion> listar() throws Exception {
-        return administracionRepository.findAll();
+    public List<AdministracionDto> listar() throws Exception {
+
+        List<Administracion> registros = administracionRepository.findAll();
+
+        List<AdministracionDto> dtos = new ArrayList<>();
+
+        for (Administracion administracion : registros) {
+
+            AdministracionDto dto = new AdministracionDto();
+
+            dto.setId(administracion.getId());
+            dto.setNombre(administracion.getNombre());
+            dto.setApellido(administracion.getApellido());
+            dto.setDni(administracion.getDni());
+            dto.setEmail(administracion.getEmail());
+            dto.setCargo(administracion.getCargo());
+
+            dtos.add(dto);
+        }
+
+        return dtos;
     }
 
     @Override
-    public Optional<Administracion> obtenerPorId(int id) throws Exception {
-        return administracionRepository.findById(id);
+    public AdministracionDto obtenerPorId(int id) throws Exception {
+
+        Administracion administracion = administracionRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(
+                        "P-404",
+                        HttpStatus.NOT_FOUND,
+                        "Administrativo no encontrado con id: " + id
+                ));
+
+        AdministracionDto dto = new AdministracionDto();
+
+        dto.setId(administracion.getId());
+        dto.setNombre(administracion.getNombre());
+        dto.setApellido(administracion.getApellido());
+        dto.setDni(administracion.getDni());
+        dto.setEmail(administracion.getEmail());
+        dto.setCargo(administracion.getCargo());
+
+        return dto;
     }
 
     @Override
     public void editar(IMapper<Administracion> mapper) throws Exception {
 
-        Administracion administracion = mapper.mapperTo();
+    	Administracion administracion = mapper.mapperTo();
 
-        administracionRepository.save(administracion);
+    	if (!administracionRepository.existsById(administracion.getId())) {
+    	    throw new BusinessException(
+    	            "P-404", HttpStatus.NOT_FOUND,
+    	            "Administrativo no encontrado con id: " + administracion.getId());
+    	}
+
+    	administracionRepository.save(administracion);
     }
 }

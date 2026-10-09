@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import org.springframework.http.HttpStatus;
+import com.app.Alumno.exception.BusinessException;
 import com.app.Alumno.dto.NotaDto;
 import com.app.Alumno.entity.Alumno;
 import com.app.Alumno.entity.Evaluacion;
@@ -24,12 +26,14 @@ public class NotaServiceImp implements NotaService {
 
     @Override
     public NotaDto crear(NotaDto dto) {
-        Evaluacion evaluacion = evaluacionRepository.findById(dto.getEvaluacionId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Evaluación no encontrada con id: " + dto.getEvaluacionId()));
-        Alumno alumno = alumnoRepository.findById(dto.getAlumnoId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Alumno no encontrado con id: " + dto.getAlumnoId()));
+    	Evaluacion evaluacion = evaluacionRepository.findById(dto.getEvaluacionId())
+    	        .orElseThrow(() -> new BusinessException(
+    	                "P-404", HttpStatus.NOT_FOUND,
+    	                "Evaluación no encontrada con id: " + dto.getEvaluacionId()));
+    	Alumno alumno = alumnoRepository.findById(dto.getAlumnoId())
+    	        .orElseThrow(() -> new BusinessException(
+    	                "P-404", HttpStatus.NOT_FOUND,
+    	                "Alumno no encontrado con id: " + dto.getAlumnoId()));
 
         Nota n = new Nota();
         n.setValor(dto.getValor());
@@ -57,8 +61,10 @@ public class NotaServiceImp implements NotaService {
     }
 
     private Nota buscar(Long id) {
-        return notaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Nota no encontrada con id: " + id));
+    	return notaRepository.findById(id)
+    	        .orElseThrow(() -> new BusinessException(
+    	                "P-404", HttpStatus.NOT_FOUND,
+    	                "Nota no encontrada con id: " + id));
     }
 
     private NotaDto toDto(Nota n) {

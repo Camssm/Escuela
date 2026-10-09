@@ -8,8 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CursosDto {
-	private Long id;
-	private String materia;
-	private String nombreMaestro;
-	private int numSalon;
+
+    private Long id;
+    private String materia;
+    private String nombreMaestro;
+    private Long docenteId;
+    private String horario;
 }
