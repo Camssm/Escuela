@@ -3,6 +3,10 @@ package com.app.Cursos.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import com.app.Cursos.exception.BusinessException;
+import com.app.Cursos.exception.RequestException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,12 +56,10 @@ public class CursosServiceImp implements CursosService {
     @Override
     public CursosDto obtenerPorId(Long id) {
 
-        Cursos curso = cursosRepository.findById(id)
-                .orElseThrow(() ->
-                    new RuntimeException(
-                        "Curso no encontrado con id: " + id
-                    )
-                );
+    	Cursos curso = cursosRepository.findById(id)
+    	        .orElseThrow(() -> new BusinessException(
+    	                "P-404", HttpStatus.NOT_FOUND,
+    	                "Curso no encontrado con id: " + id));
 
         CursosDto dto = new CursosDto();
 
@@ -74,15 +76,16 @@ public class CursosServiceImp implements CursosService {
     @Override
     public void editar(IMapper<Cursos> mapper) throws Exception {
 
-        Cursos datosNuevos = mapper.mapperTo();
+    	Cursos datosNuevos = mapper.mapperTo();
 
-        Cursos existente = cursosRepository.findById(datosNuevos.getId())
-                .orElseThrow(() ->
-                    new RuntimeException(
-                        "Curso no encontrado con id: "
-                        + datosNuevos.getId()
-                    )
-                );
+    	if (datosNuevos.getId() == null) {
+    	    throw new RequestException("P-400", "El id del curso es obligatorio");
+    	}
+
+    	Cursos existente = cursosRepository.findById(datosNuevos.getId())
+    	        .orElseThrow(() -> new BusinessException(
+    	                "P-404", HttpStatus.NOT_FOUND,
+    	                "Curso no encontrado con id: " + datosNuevos.getId()));
 
         existente.setMateria(datosNuevos.getMateria());
         existente.setNombreMaestro(datosNuevos.getNombreMaestro());
@@ -96,19 +99,16 @@ public class CursosServiceImp implements CursosService {
     @Override
     public void eliminar(Long id) throws Exception {
 
-        Cursos curso = cursosRepository.findById(id)
-                .orElseThrow(() ->
-                    new RuntimeException(
-                        "Curso no encontrado con id: " + id
-                    )
-                );
+    	Cursos curso = cursosRepository.findById(id)
+    	        .orElseThrow(() -> new BusinessException(
+    	                "P-404", HttpStatus.NOT_FOUND,
+    	                "Curso no encontrado con id: " + id));
 
-        if (!curso.getAlumnos().isEmpty()) {
-
-            throw new RuntimeException(
-                "No se puede eliminar el curso porque tiene alumnos asignados..."
-            );
-        }
+    	if (!curso.getAlumnos().isEmpty()) {
+    	    throw new BusinessException(
+    	            "P-409", HttpStatus.CONFLICT,
+    	            "No se puede eliminar el curso porque tiene alumnos asignados");
+    	}
 
         cursosRepository.delete(curso);
     }
