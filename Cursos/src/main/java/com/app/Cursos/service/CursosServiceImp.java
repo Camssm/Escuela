@@ -3,113 +3,204 @@ package com.app.Cursos.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
-import com.app.Cursos.exception.BusinessException;
-import com.app.Cursos.exception.RequestException;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
+import com.app.Cursos.dto.AlumnoDto;
+import com.app.Cursos.dto.CursosConAlumnoDto;
 import com.app.Cursos.dto.CursosDto;
 import com.app.Cursos.entity.Cursos;
+import com.app.Cursos.exception.BusinessException;
+import com.app.Cursos.exception.RequestException;
 import com.app.Cursos.mappers.IMapper;
 import com.app.Cursos.repository.CursosRepository;
+import com.app.Cursos.repository.DocenteRepository;
 
 @Service
 public class CursosServiceImp implements CursosService {
 
-    @Autowired
-    CursosRepository cursosRepository;
+	@Autowired
+	CursosRepository cursosRepository;
 
-    @Override
-    public void agregar(IMapper<Cursos> mapper) throws Exception {
+	@Autowired
+	DocenteRepository docenteRepository;
 
-        Cursos curso = mapper.mapperTo();
+	@Autowired
+	RestTemplate restTemplate;
 
-        cursosRepository.save(curso);
-    }
+	@Override
+	public void agregar(IMapper<Cursos> mapper) throws Exception {
 
-    @Override
-    public List<CursosDto> listar() throws Exception {
+		Cursos curso = mapper.mapperTo();
 
-        List<Cursos> registros = cursosRepository.findAll();
+		validarDocente(curso.getDocenteId());
 
-        List<CursosDto> dtos = new ArrayList<>();
+		cursosRepository.save(curso);
+	}
 
-        for (Cursos curso : registros) {
+	@Override
+	public List<CursosDto> listar() throws Exception {
 
-            CursosDto dto = new CursosDto();
+		List<Cursos> registros = cursosRepository.findAll();
 
-            dto.setId(curso.getId());
-            dto.setMateria(curso.getMateria());
-            dto.setNombreMaestro(curso.getNombreMaestro());
-            dto.setDocenteId(curso.getDocenteId());
-            dto.setHorario(curso.getHorario());
-            dto.setCupo(curso.getCupo());
+		List<CursosDto> dtos = new ArrayList<>();
 
-            dtos.add(dto);
-        }
+		for (Cursos curso : registros) {
 
-        return dtos;
-    }
+			CursosDto dto = new CursosDto();
 
-    @Override
-    public CursosDto obtenerPorId(Long id) {
+			dto.setId(curso.getId());
+			dto.setMateria(curso.getMateria());
+			dto.setDocenteId(curso.getDocenteId());
+			dto.setHorario(curso.getHorario());
+			dto.setCupo(curso.getCupo());
 
-    	Cursos curso = cursosRepository.findById(id)
-    	        .orElseThrow(() -> new BusinessException(
-    	                "P-404", HttpStatus.NOT_FOUND,
-    	                "Curso no encontrado con id: " + id));
+			if (curso.getDocenteId() != null) {
+				docenteRepository.findById(curso.getDocenteId()).ifPresent(d ->
+						dto.setNombreMaestro(d.getNombre() + " " + d.getApellido()));
+			}
 
-        CursosDto dto = new CursosDto();
+			dtos.add(dto);
+		}
 
-        dto.setId(curso.getId());
-        dto.setMateria(curso.getMateria());
-        dto.setNombreMaestro(curso.getNombreMaestro());
-        dto.setDocenteId(curso.getDocenteId());
-        dto.setHorario(curso.getHorario());
-        dto.setCupo(curso.getCupo());
+		return dtos;
+	}
 
-        return dto;
-    }
+	@Override
+	public CursosDto obtenerPorId(Long id) {
 
-    @Override
-    public void editar(IMapper<Cursos> mapper) throws Exception {
+		Cursos curso = cursosRepository.findById(id).orElseThrow(
+				() -> new BusinessException("P-404", HttpStatus.NOT_FOUND, "Curso no encontrado con id: " + id));
 
-    	Cursos datosNuevos = mapper.mapperTo();
+		CursosDto dto = new CursosDto();
 
-    	if (datosNuevos.getId() == null) {
-    	    throw new RequestException("P-400", "El id del curso es obligatorio");
-    	}
+		dto.setId(curso.getId());
+		dto.setDocenteId(curso.getDocenteId());
+		dto.setMateria(curso.getMateria());
+		dto.setHorario(curso.getHorario());
+		dto.setCupo(curso.getCupo());
 
-    	Cursos existente = cursosRepository.findById(datosNuevos.getId())
-    	        .orElseThrow(() -> new BusinessException(
-    	                "P-404", HttpStatus.NOT_FOUND,
-    	                "Curso no encontrado con id: " + datosNuevos.getId()));
+		if (curso.getDocenteId() != null) {
+			docenteRepository.findById(curso.getDocenteId()).ifPresent(d ->
+					dto.setNombreMaestro(d.getNombre() + " " + d.getApellido()));
+		}
 
-        existente.setMateria(datosNuevos.getMateria());
-        existente.setNombreMaestro(datosNuevos.getNombreMaestro());
-        existente.setDocenteId(datosNuevos.getDocenteId());
-        existente.setHorario(datosNuevos.getHorario());
-        existente.setCupo(datosNuevos.getCupo());
+		return dto;
+	}
 
-        cursosRepository.save(existente);
-    }
+	@Override
+	public void editar(IMapper<Cursos> mapper) throws Exception {
 
-    @Override
-    public void eliminar(Long id) throws Exception {
+		Cursos datosNuevos = mapper.mapperTo();
 
-    	Cursos curso = cursosRepository.findById(id)
-    	        .orElseThrow(() -> new BusinessException(
-    	                "P-404", HttpStatus.NOT_FOUND,
-    	                "Curso no encontrado con id: " + id));
+		if (datosNuevos.getId() == null) {
+			throw new RequestException("P-400", "El id del curso es obligatorio");
+		}
 
-    	if (!curso.getAlumnos().isEmpty()) {
-    	    throw new BusinessException(
-    	            "P-409", HttpStatus.CONFLICT,
-    	            "No se puede eliminar el curso porque tiene alumnos asignados");
-    	}
+		Cursos existente = cursosRepository.findById(datosNuevos.getId())
+				.orElseThrow(() -> new BusinessException(
+						"P-404",
+						HttpStatus.NOT_FOUND,
+						"Curso no encontrado con id: " + datosNuevos.getId()));
 
-        cursosRepository.delete(curso);
-    }
+		validarDocente(datosNuevos.getDocenteId());
+
+		existente.setMateria(datosNuevos.getMateria());
+		existente.setDocenteId(datosNuevos.getDocenteId());
+		existente.setHorario(datosNuevos.getHorario());
+		existente.setCupo(datosNuevos.getCupo());
+
+		cursosRepository.save(existente);
+	}
+
+	@Override
+	public void eliminar(Long id) throws Exception {
+
+		Cursos curso = cursosRepository.findById(id).orElseThrow(
+				() -> new BusinessException("P-404", HttpStatus.NOT_FOUND, "Curso no encontrado con id: " + id));
+
+		if (!curso.getAlumnos().isEmpty()) {
+			throw new BusinessException("P-409", HttpStatus.CONFLICT,
+					"No se puede eliminar el curso porque tiene alumnos asignados");
+		}
+
+		cursosRepository.delete(curso);
+	}
+
+	@Override
+	public CursosConAlumnoDto obtenerConAlumnos(Long id) {
+
+		Cursos curso = cursosRepository.findById(id).orElseThrow(
+				() -> new BusinessException("P-404", HttpStatus.NOT_FOUND, "Curso no encontrado con id: " + id));
+
+		CursosConAlumnoDto dto = new CursosConAlumnoDto();
+
+		dto.setId(curso.getId());
+		dto.setMateria(curso.getMateria());
+		dto.setDocenteId(curso.getDocenteId());
+		dto.setHorario(curso.getHorario());
+		dto.setCupo(curso.getCupo());
+
+		if (curso.getDocenteId() != null) {
+		    docenteRepository.findById(curso.getDocenteId()).ifPresent(d ->
+		            dto.setNombreMaestro(d.getNombre() + " " + d.getApellido()));
+		}
+		
+		try {
+			List<AlumnoDto> alumnos = restTemplate
+					.exchange("http://MS-ALUMNOS/api/alumnos/curso/" + id,
+							HttpMethod.GET,
+							null,
+							new ParameterizedTypeReference<List<AlumnoDto>>() {
+							})
+					.getBody();
+
+			dto.setAlumnos(alumnos != null ? alumnos : new ArrayList<>());
+
+		} catch (HttpClientErrorException.NotFound e) {
+			throw new BusinessException("P-404", HttpStatus.NOT_FOUND,
+					"No se encontraron los alumnos del curso con id: " + id);
+		} catch (RestClientException e) {
+			throw new BusinessException("P-503", HttpStatus.SERVICE_UNAVAILABLE,
+					"No se pudieron consultar los alumnos del curso, intentá más tarde");
+		}
+
+		return dto;
+	}
+
+	private void validarDocente(Long docenteId) {
+
+		if (docenteId == null || docenteId <= 0) {
+			throw new RequestException("P-400", "El ID del docente es obligatorio");
+		}
+
+		Boolean esDocente;
+
+		try {
+			esDocente = restTemplate.getForObject(
+					"http://MS-ADMINISTRACION/api/administracion/docente/" + docenteId,
+					Boolean.class);
+
+		} catch (HttpClientErrorException.NotFound e) {
+			throw new RequestException("P-400", "El ID ingresado no corresponde a un docente");
+		} catch (RestClientException e) {
+			throw new BusinessException("P-503", HttpStatus.SERVICE_UNAVAILABLE,
+					"No se pudo validar el docente, intentá más tarde");
+		}
+
+		if (!Boolean.TRUE.equals(esDocente)) {
+			throw new RequestException("P-400", "El ID ingresado no corresponde a un docente");
+		}
+	}
+	
+	@Override
+	public boolean docenteTieneCursos(Long docenteId) {
+	    return cursosRepository.existsByDocenteId(docenteId);
+	}
 }

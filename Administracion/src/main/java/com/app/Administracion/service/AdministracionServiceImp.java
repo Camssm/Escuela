@@ -5,11 +5,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpStatus;
 import com.app.Administracion.exception.BusinessException;
 import com.app.Administracion.exception.RequestException;
-
+import com.app.Administracion.Enum.Cargo;
 import com.app.Administracion.config.RabbitMQConfig;
 import com.app.Administracion.dto.AdministracionDto;
 import com.app.Administracion.entity.Administracion;
@@ -22,95 +23,127 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 @Service
 public class AdministracionServiceImp implements AdministracionService {
 
-    @Autowired
-    private AdministracionRepository administracionRepository;
+	@Autowired
+	private AdministracionRepository administracionRepository;
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+	@Autowired
+	private RabbitTemplate rabbitTemplate;
 
-    @Override
-    public void agregar(IMapper<Administracion> mapper) throws Exception {
+	@Autowired
+	private RestTemplate restTemplate;
 
-        Administracion guardar = mapper.mapperTo();
+	@Override
+	public void agregar(IMapper<Administracion> mapper) throws Exception {
 
-        if (guardar.getCargo() == null) {
-            throw new RequestException("P-400", "El cargo es obligatorio");
-        }
+		Administracion guardar = mapper.mapperTo();
 
-        guardar = administracionRepository.save(guardar);
+		if (guardar.getCargo() == null) {
+			throw new RequestException("P-400", "El cargo es obligatorio");
+		}
 
-        AdministracionEvent event = new AdministracionEvent();
+		guardar = administracionRepository.save(guardar);
 
-        event.setId((long) guardar.getId());
-        event.setNombre(guardar.getNombre());
-        event.setApellido(guardar.getApellido());
-        event.setEmail(guardar.getEmail());
-        event.setCargo(guardar.getCargo().name());
+		AdministracionEvent event = new AdministracionEvent();
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.EXCHANGE,
-                RabbitMQConfig.ROUTING_KEY,
-                event
-        );
-    }
+		event.setId((long) guardar.getId());
+		event.setNombre(guardar.getNombre());
+		event.setApellido(guardar.getApellido());
+		event.setEmail(guardar.getEmail());
+		event.setCargo(guardar.getCargo().name());
 
-    @Override
-    public List<AdministracionDto> listar() throws Exception {
+		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, event);
+	}
 
-        List<Administracion> registros = administracionRepository.findAll();
+	@Override
+	public List<AdministracionDto> listar() throws Exception {
 
-        List<AdministracionDto> dtos = new ArrayList<>();
+		List<Administracion> registros = administracionRepository.findAll();
 
-        for (Administracion administracion : registros) {
+		List<AdministracionDto> dtos = new ArrayList<>();
 
-            AdministracionDto dto = new AdministracionDto();
+		for (Administracion administracion : registros) {
 
-            dto.setId(administracion.getId());
-            dto.setNombre(administracion.getNombre());
-            dto.setApellido(administracion.getApellido());
-            dto.setDni(administracion.getDni());
-            dto.setEmail(administracion.getEmail());
-            dto.setCargo(administracion.getCargo());
+			AdministracionDto dto = new AdministracionDto();
 
-            dtos.add(dto);
-        }
+			dto.setId(administracion.getId());
+			dto.setNombre(administracion.getNombre());
+			dto.setApellido(administracion.getApellido());
+			dto.setDni(administracion.getDni());
+			dto.setEmail(administracion.getEmail());
+			dto.setCargo(administracion.getCargo());
 
-        return dtos;
-    }
+			dtos.add(dto);
+		}
 
-    @Override
-    public AdministracionDto obtenerPorId(int id) throws Exception {
+		return dtos;
+	}
 
-        Administracion administracion = administracionRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(
-                        "P-404",
-                        HttpStatus.NOT_FOUND,
-                        "Administrativo no encontrado con id: " + id
-                ));
+	@Override
+	public AdministracionDto obtenerPorId(int id) throws Exception {
 
-        AdministracionDto dto = new AdministracionDto();
+		Administracion administracion = administracionRepository.findById(id)
+				.orElseThrow(() -> new BusinessException("P-404", HttpStatus.NOT_FOUND,
+						"Administrativo no encontrado con id: " + id));
 
-        dto.setId(administracion.getId());
-        dto.setNombre(administracion.getNombre());
-        dto.setApellido(administracion.getApellido());
-        dto.setDni(administracion.getDni());
-        dto.setEmail(administracion.getEmail());
-        dto.setCargo(administracion.getCargo());
+		AdministracionDto dto = new AdministracionDto();
 
-        return dto;
-    }
+		dto.setId(administracion.getId());
+		dto.setNombre(administracion.getNombre());
+		dto.setApellido(administracion.getApellido());
+		dto.setDni(administracion.getDni());
+		dto.setEmail(administracion.getEmail());
+		dto.setCargo(administracion.getCargo());
 
-    @Override
-    public void editar(IMapper<Administracion> mapper) throws Exception {
+		return dto;
+	}
 
-    	Administracion administracion = mapper.mapperTo();
+	@Override
+	public void editar(IMapper<Administracion> mapper) throws Exception {
 
-    	if (!administracionRepository.existsById(administracion.getId())) {
-    	    throw new BusinessException(
-    	            "P-404", HttpStatus.NOT_FOUND,
-    	            "Administrativo no encontrado con id: " + administracion.getId());
-    	}
+		Administracion administracion = mapper.mapperTo();
 
-    	administracionRepository.save(administracion);
-    }
+		Administracion anterior = administracionRepository.findById(administracion.getId())
+				.orElseThrow(() -> new BusinessException("P-404", HttpStatus.NOT_FOUND,
+						"Administrativo no encontrado con id: " + administracion.getId()));
+
+		if (administracion.getCargo() == null) {
+			throw new RequestException("P-400", "El cargo es obligatorio");
+		}
+
+		if (anterior.getCargo() == Cargo.DOCENTE && administracion.getCargo() != Cargo.DOCENTE) {
+
+			Boolean tieneCursos;
+			try {
+				tieneCursos = restTemplate.getForObject(
+						"http://MS-CURSOS/api/cursos/docente/" + administracion.getId() + "/tiene-cursos",
+						Boolean.class);
+			} catch (RestClientException e) {
+				throw new BusinessException("P-503", HttpStatus.SERVICE_UNAVAILABLE,
+						"No se pudo verificar los cursos del docente, intentá más tarde");
+			}
+
+			if (Boolean.TRUE.equals(tieneCursos)) {
+				throw new BusinessException("P-409", HttpStatus.CONFLICT,
+						"El docente tiene cursos asignados. Reasigná sus cursos antes de cambiarle el cargo");
+			}
+		}
+
+		Administracion guardado = administracionRepository.save(administracion);
+
+		AdministracionEvent event = new AdministracionEvent();
+
+		event.setId((long) guardado.getId());
+		event.setNombre(guardado.getNombre());
+		event.setApellido(guardado.getApellido());
+		event.setEmail(guardado.getEmail());
+		event.setCargo(guardado.getCargo().name());
+
+		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, event);
+	}
+
+	@Override
+	public boolean esDocente(int id) {
+		return administracionRepository.findById(id).map(administracion -> administracion.getCargo() == Cargo.DOCENTE)
+				.orElse(false);
+	}
 }

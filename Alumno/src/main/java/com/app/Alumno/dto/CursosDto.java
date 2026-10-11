@@ -10,8 +10,9 @@ import lombok.NoArgsConstructor;
 public class CursosDto {
 
     private Long id;
-    private String materia;
-    private String nombreMaestro;
     private Long docenteId;
+    private String nombreMaestro;
+    private String materia;
     private String horario;
+    private int cupo;
 }

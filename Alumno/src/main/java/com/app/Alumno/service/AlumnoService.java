@@ -13,6 +13,8 @@ public interface AlumnoService {
 
     List<AlumnoDto> listar() throws Exception;
 
+    List<AlumnoDto> listarPorCurso(Long cursoId);
+
     AlumnoConCursoDto obtenerConCurso(Long alumnoId);
 
     void editar(IMapper<Alumno> mapper) throws Exception;

@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import com.app.Alumno.exception.BusinessException;
-import com.app.Alumno.exception.RequestException;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,141 +26,257 @@ import com.app.Alumno.senders.AlumnoEvent;
 @Service
 public class AlumnoServiceImp implements AlumnoService {
 
-    @Autowired
-    Alumnorepository alumnorepository;
+	@Autowired
+	Alumnorepository alumnorepository;
 
-    @Autowired
-    RestTemplate restTemplate;
+	@Autowired
+	RestTemplate restTemplate;
 
-    @Autowired
-    RabbitTemplate rabbitTemplate;
+	@Autowired
+	RabbitTemplate rabbitTemplate;
 
-    @Override
-    public List<AlumnoDto> listar() throws Exception {
+	@Override
+	public List<AlumnoDto> listar() throws Exception {
 
-        List<Alumno> registros = alumnorepository.findAll();
+		List<Alumno> registros = alumnorepository.findAll();
 
-        List<AlumnoDto> dtos = new ArrayList<>();
+		List<AlumnoDto> dtos = new ArrayList<>();
 
-        for (Alumno alumno : registros) {
+		for (Alumno alumno : registros) {
 
-            AlumnoDto dto = new AlumnoDto();
+			AlumnoDto dto = new AlumnoDto();
 
-            dto.setId(alumno.getId());
-            dto.setNombre(alumno.getNombre());
-            dto.setApellido(alumno.getApellido());
-            dto.setGmail(alumno.getGmail());
-            dto.setEstado(alumno.getEstado());
-            dto.setCursoId(alumno.getCursoId());
+			dto.setId(alumno.getId());
+			dto.setNombre(alumno.getNombre());
+			dto.setApellido(alumno.getApellido());
+			dto.setGmail(alumno.getGmail());
+			dto.setEstado(alumno.getEstado());
+			dto.setCursoId(alumno.getCursoId());
 
-            dtos.add(dto);
-        }
+			dtos.add(dto);
+		}
 
-        return dtos;
-    }
+		return dtos;
+	}
 
-    @Override
-    public void agregar(IMapper<Alumno> mapper) throws Exception {
+	@Override
+	public List<AlumnoDto> listarPorCurso(Long cursoId) {
 
-        Alumno alumno = mapper.mapperTo();
+		try {
+			restTemplate.getForObject("http://MS-CURSOS/api/cursos/" + cursoId, CursosDto.class);
+		} catch (HttpClientErrorException.NotFound e) {
+			throw new BusinessException("P-404", HttpStatus.NOT_FOUND, "No existe el curso con id: " + cursoId);
+		} catch (RestClientException e) {
+			throw new RuntimeException("No se pudo verificar el curso, intentá más tarde");
+		}
 
-        if (alumno.getCursoId() == null || alumno.getCursoId() == 0) {
-            alumno.setCursoId(null);
-            alumno.setEstado(Estado.SINASIGNACION);
-        } else {
-            alumno.setEstado(Estado.ASIGNADO);
-        }
+		List<Alumno> registros = alumnorepository.findByCursoIdAndEstado(cursoId, Estado.ASIGNADO);
 
-        Alumno nuevoAlumno = alumnorepository.save(alumno);
+		List<AlumnoDto> dtos = new ArrayList<>();
 
-        if (nuevoAlumno.getCursoId() != null) {
+		for (Alumno alumno : registros) {
+			AlumnoDto dto = new AlumnoDto();
+			dto.setId(alumno.getId());
+			dto.setNombre(alumno.getNombre());
+			dto.setApellido(alumno.getApellido());
+			dto.setGmail(alumno.getGmail());
+			dto.setEstado(alumno.getEstado());
+			dto.setCursoId(alumno.getCursoId());
+			dtos.add(dto);
+		}
 
-            AlumnoEvent event = new AlumnoEvent();
+		return dtos;
+	}
 
-            event.setAlumnoId(nuevoAlumno.getId());
-            event.setCursoId(nuevoAlumno.getCursoId());
+	@Override
+	public void agregar(IMapper<Alumno> mapper) throws Exception {
 
-            rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.EXCHANGE,
-                    RabbitMQConfig.ROUTING_KEY,
-                    event
-            );
-        }
-    }
+		Alumno alumno = mapper.mapperTo();
 
-    @Override
-    public AlumnoConCursoDto obtenerConCurso(Long alumnoId) {
+		if (alumno.getCursoId() == null || alumno.getCursoId() == 0) {
+			alumno.setCursoId(null);
+			alumno.setEstado(Estado.SINASIGNACION);
+		} else {
+			try {
+				restTemplate.getForObject("http://MS-CURSOS/api/cursos/" + alumno.getCursoId(), CursosDto.class);
+			} catch (HttpClientErrorException.NotFound e) {
+				throw new RuntimeException("El curso con id " + alumno.getCursoId() + " no existe");
+			} catch (RestClientException e) {
+				throw new RuntimeException("No se pudo verificar el curso, intentá más tarde");
+			}
 
-    	Alumno alumno = alumnorepository.findById(alumnoId)
-    	        .orElseThrow(() -> new BusinessException(
-    	                "P-404", HttpStatus.NOT_FOUND,
-    	                "Alumno no encontrado con id: " + alumnoId));
+			alumno.setEstado(Estado.ASIGNADO);
+		}
 
-        AlumnoConCursoDto dto = new AlumnoConCursoDto();
+		Alumno nuevoAlumno = alumnorepository.save(alumno);
 
-        dto.setId(alumno.getId());
-        dto.setNombre(alumno.getNombre());
-        dto.setApellido(alumno.getApellido());
-        dto.setGmail(alumno.getGmail());
-        dto.setEstado(alumno.getEstado());
+		if (nuevoAlumno.getCursoId() != null) {
 
-        if (alumno.getCursoId() != null) {
+			AlumnoEvent event = new AlumnoEvent();
 
-            try {
+			event.setAlumnoId(nuevoAlumno.getId());
+			event.setCursoId(nuevoAlumno.getCursoId());
+			event.setTipo("ALTA");
 
-                CursosDto curso = restTemplate.getForObject(
-                        "http://MS-CURSOS/api/cursos/"
-                        + alumno.getCursoId(),
-                        CursosDto.class
-                );
+			rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, event);
+		}
+	}
 
-                dto.setCurso(curso);
+	@Override
+	public AlumnoConCursoDto obtenerConCurso(Long alumnoId) {
 
-            } catch (RestClientException e) {
-            }
-        }
+		Alumno alumno = alumnorepository.findById(alumnoId).orElseThrow(
+				() -> new BusinessException("P-404", HttpStatus.NOT_FOUND, "Alumno no encontrado con id: " + alumnoId));
 
-        return dto;
-    }
+		AlumnoConCursoDto dto = new AlumnoConCursoDto();
 
-    @Override
-    public void editar(IMapper<Alumno> mapper) throws Exception {
+		dto.setId(alumno.getId());
+		dto.setNombre(alumno.getNombre());
+		dto.setApellido(alumno.getApellido());
+		dto.setGmail(alumno.getGmail());
+		dto.setEstado(alumno.getEstado());
 
-    	Alumno datosNuevos = mapper.mapperTo();
+		if (alumno.getCursoId() != null) {
 
-    	if (datosNuevos.getId() == null) {
-    	    throw new RequestException("P-400", "El id del alumno es obligatorio");
-    	}
+			try {
 
-    	Alumno existente = alumnorepository.findById(datosNuevos.getId())
-    	        .orElseThrow(() -> new BusinessException(
-    	                "P-404", HttpStatus.NOT_FOUND,
-    	                "Alumno no encontrado con id: " + datosNuevos.getId()));
+				CursosDto curso = restTemplate.getForObject("http://MS-CURSOS/api/cursos/" + alumno.getCursoId(),
+						CursosDto.class);
 
-        existente.setNombre(datosNuevos.getNombre());
-        existente.setApellido(datosNuevos.getApellido());
-        existente.setGmail(datosNuevos.getGmail());
-        existente.setCursoId(datosNuevos.getCursoId());
+				dto.setCurso(curso);
 
-        alumnorepository.save(existente);
-    }
+			} catch (RestClientException e) {
+			}
+		}
 
-    @Override
-    public void cambiarEstado(IMapper<Alumno> mapper) throws Exception {
+		return dto;
+	}
 
-    	Alumno datos = mapper.mapperTo();
+	@Override
+	public void editar(IMapper<Alumno> mapper) throws Exception {
 
-    	if (datos.getId() == null) {
-    	    throw new RequestException("P-400", "El id del alumno es obligatorio");
-    	}
+		Alumno datosNuevos = mapper.mapperTo();
 
-    	Alumno existente = alumnorepository.findById(datos.getId())
-    	        .orElseThrow(() -> new BusinessException(
-    	                "P-404", HttpStatus.NOT_FOUND,
-    	                "Alumno no encontrado con id: " + datos.getId()));
+		Alumno existente = alumnorepository.findById(datosNuevos.getId())
+				.orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + datosNuevos.getId()));
 
-        existente.setEstado(datos.getEstado());
+		Long cursoAnterior = existente.getCursoId();
 
-        alumnorepository.save(existente);
-    }
+		Long cursoNuevo = datosNuevos.getCursoId();
+
+		if (cursoNuevo != null && cursoNuevo <= 0) {
+			cursoNuevo = null;
+		}
+
+		if (cursoNuevo != null) {
+			try {
+				restTemplate.getForObject("http://MS-CURSOS/api/cursos/" + cursoNuevo, CursosDto.class);
+			} catch (HttpClientErrorException.NotFound e) {
+				throw new RuntimeException("El curso con id " + cursoNuevo + " no existe");
+			} catch (RestClientException e) {
+				throw new RuntimeException("No se pudo verificar el curso, intentá más tarde");
+			}
+		}
+
+		existente.setNombre(datosNuevos.getNombre());
+		existente.setApellido(datosNuevos.getApellido());
+		existente.setGmail(datosNuevos.getGmail());
+		existente.setCursoId(cursoNuevo);
+
+		boolean habilitado = existente.getEstado() != Estado.DESHABILITADO;
+
+		if (habilitado) {
+			existente.setEstado(cursoNuevo == null ? Estado.SINASIGNACION : Estado.ASIGNADO);
+		}
+
+		alumnorepository.save(existente);
+
+		if (habilitado && cursoAnterior != null && !cursoAnterior.equals(cursoNuevo)) {
+
+			AlumnoEvent baja = new AlumnoEvent();
+
+			baja.setAlumnoId(existente.getId());
+			baja.setCursoId(cursoAnterior);
+			baja.setTipo("BAJA");
+
+			rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, baja);
+		}
+
+		if (habilitado && cursoNuevo != null && !cursoNuevo.equals(cursoAnterior)) {
+
+			AlumnoEvent alta = new AlumnoEvent();
+
+			alta.setAlumnoId(existente.getId());
+			alta.setCursoId(cursoNuevo);
+			alta.setTipo("ALTA");
+
+			rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, alta);
+		}
+	}
+
+	@Override
+	public void cambiarEstado(IMapper<Alumno> mapper) throws Exception {
+
+		Alumno datos = mapper.mapperTo();
+
+		Alumno existente = alumnorepository.findById(datos.getId()).orElseThrow(() -> new BusinessException("P-404",
+				HttpStatus.NOT_FOUND, "Alumno no encontrado con id: " + datos.getId()));
+
+		if (datos.getEstado() == null) {
+			throw new BusinessException("P-400", HttpStatus.BAD_REQUEST, "El estado es obligatorio");
+		}
+
+		boolean estabaHabilitado = existente.getEstado() != Estado.DESHABILITADO;
+		Long cursoActual = existente.getCursoId();
+
+		if (datos.getEstado() == Estado.DESHABILITADO) {
+
+			existente.setEstado(Estado.DESHABILITADO);
+			alumnorepository.save(existente);
+
+			if (cursoActual != null && estabaHabilitado) {
+				AlumnoEvent baja = new AlumnoEvent();
+				baja.setAlumnoId(existente.getId());
+				baja.setCursoId(cursoActual);
+				baja.setTipo("BAJA");
+
+				rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, baja);
+			}
+
+		} else if (datos.getEstado() == Estado.SINASIGNACION) {
+
+			existente.setCursoId(null);
+			existente.setEstado(Estado.SINASIGNACION);
+			alumnorepository.save(existente);
+
+			if (cursoActual != null && estabaHabilitado) {
+				AlumnoEvent baja = new AlumnoEvent();
+				baja.setAlumnoId(existente.getId());
+				baja.setCursoId(cursoActual);
+				baja.setTipo("BAJA");
+
+				rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, baja);
+			}
+
+		} else if (datos.getEstado() == Estado.ASIGNADO) {
+
+			if (cursoActual == null) {
+				throw new BusinessException("P-400", HttpStatus.BAD_REQUEST,
+						"El alumno no tiene curso. Para asignarlo usá editar y elegí un curso");
+			}
+
+			existente.setEstado(Estado.ASIGNADO);
+			alumnorepository.save(existente);
+
+			if (!estabaHabilitado) {
+				AlumnoEvent alta = new AlumnoEvent();
+				alta.setAlumnoId(existente.getId());
+				alta.setCursoId(cursoActual);
+				alta.setTipo("ALTA");
+
+				rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, alta);
+			}
+		}
+	}
+
 }

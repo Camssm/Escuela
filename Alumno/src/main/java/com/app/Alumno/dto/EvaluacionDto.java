@@ -18,5 +18,4 @@ public class EvaluacionDto {
     private String descripcion;
     private LocalDate fecha;
     private Long cursoId;
-    private Long docenteId;
 }

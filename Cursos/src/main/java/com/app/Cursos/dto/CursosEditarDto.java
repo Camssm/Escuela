@@ -14,7 +14,6 @@ public class CursosEditarDto implements IMapper<Cursos> {
 
     private Long id;
     private String materia;
-    private String nombreMaestro;
     private Long docenteId;
     private String horario;
     private int cupo;
@@ -25,7 +24,6 @@ public class CursosEditarDto implements IMapper<Cursos> {
         Cursos curso = new Cursos(
             id,
             materia,
-            nombreMaestro,
             horario,
             cupo
         );

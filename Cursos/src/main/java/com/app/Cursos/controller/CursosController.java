@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.Cursos.dto.CursosAgregarDto;
+import com.app.Cursos.dto.CursosConAlumnoDto;
 import com.app.Cursos.dto.CursosDto;
 import com.app.Cursos.dto.CursosEditarDto;
 import com.app.Cursos.service.CursosService;
@@ -22,59 +23,53 @@ import com.app.Cursos.service.CursosService;
 @RequestMapping(value = "/api/cursos")
 public class CursosController {
 
-    @Autowired
-    private CursosService cursosService;
+	@Autowired
+	private CursosService cursosService;
 
-    @RequestMapping(
-        value = "/cursos",
-        method = RequestMethod.GET
-    )
-    public ResponseEntity<List<CursosDto>> listar() throws Exception {
+	@RequestMapping(value = "/cursos", method = RequestMethod.GET)
+	public ResponseEntity<List<CursosDto>> listar() throws Exception {
 
-        return ResponseEntity.ok(
-            cursosService.listar()
-        );
-    }
+		return ResponseEntity.ok(cursosService.listar());
+	}
 
-    @RequestMapping(
-        value = "/agregar",
-        method = RequestMethod.PUT
-    )
-    public ResponseEntity<Void> agregar(
-            @RequestBody CursosAgregarDto cursosDto) throws Exception {
+	@RequestMapping(value = "/agregar", method = RequestMethod.PUT)
+	public ResponseEntity<Void> agregar(@RequestBody CursosAgregarDto cursosDto) throws Exception {
 
-        cursosService.agregar(cursosDto);
+		cursosService.agregar(cursosDto);
 
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CursosDto> obtenerPorId(
-            @PathVariable Long id) {
+	@GetMapping("/{id}")
+	public ResponseEntity<CursosDto> obtenerPorId(@PathVariable Long id) {
 
-        return ResponseEntity.ok(
-            cursosService.obtenerPorId(id)
-        );
-    }
+		return ResponseEntity.ok(cursosService.obtenerPorId(id));
+	}
 
-    @RequestMapping(
-        value = "/editar",
-        method = RequestMethod.PUT
-    )
-    public ResponseEntity<Void> editar(
-            @RequestBody CursosEditarDto cursosDto) throws Exception {
+	@GetMapping("/{id}/alumnos")
+	public ResponseEntity<CursosConAlumnoDto> obtenerConAlumnos(@PathVariable Long id) {
 
-        cursosService.editar(cursosDto);
+		return ResponseEntity.ok(cursosService.obtenerConAlumnos(id));
+	}
 
-        return ResponseEntity.ok().build();
-    }
+	@RequestMapping(value = "/editar", method = RequestMethod.PUT)
+	public ResponseEntity<Void> editar(@RequestBody CursosEditarDto cursosDto) throws Exception {
 
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> eliminar(
-            @PathVariable Long id) throws Exception {
+		cursosService.editar(cursosDto);
 
-        cursosService.eliminar(id);
+		return ResponseEntity.ok().build();
+	}
 
-        return ResponseEntity.noContent().build();
-    }
+	@DeleteMapping("/eliminar/{id}")
+	public ResponseEntity<Void> eliminar(@PathVariable Long id) throws Exception {
+
+		cursosService.eliminar(id);
+
+		return ResponseEntity.noContent().build();
+	}
+	
+	@GetMapping("/docente/{docenteId}/tiene-cursos")
+	public ResponseEntity<Boolean> tieneCursos(@PathVariable Long docenteId) {
+	    return ResponseEntity.ok(cursosService.docenteTieneCursos(docenteId));
+	}
 }

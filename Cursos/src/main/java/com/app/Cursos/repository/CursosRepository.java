@@ -7,4 +7,5 @@ import com.app.Cursos.entity.Cursos;
 
 public interface CursosRepository extends JpaRepository<Cursos, Long>  {
 
+	boolean existsByDocenteId(Long docenteId);
 }

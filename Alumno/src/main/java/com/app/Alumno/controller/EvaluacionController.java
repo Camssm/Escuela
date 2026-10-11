@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.app.Alumno.dto.EvaluacionAgregarDto;
 import com.app.Alumno.dto.EvaluacionDto;
 import com.app.Alumno.service.EvaluacionService;
 
@@ -24,12 +25,16 @@ public class EvaluacionController {
     private final EvaluacionService evaluacionService;
 
     @PostMapping
-    public ResponseEntity<EvaluacionDto> crear(@RequestBody EvaluacionDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(evaluacionService.crear(dto));
+    public ResponseEntity<EvaluacionDto> crear(
+            @RequestBody EvaluacionAgregarDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(evaluacionService.crear(dto));
     }
 
     @GetMapping("/curso/{cursoId}")
-    public ResponseEntity<List<EvaluacionDto>> listarPorCurso(@PathVariable Long cursoId) {
-        return ResponseEntity.ok(evaluacionService.listarPorCurso(cursoId));
+    public ResponseEntity<List<EvaluacionDto>> listarPorCurso(
+            @PathVariable Long cursoId) {
+        return ResponseEntity.ok(
+                evaluacionService.listarPorCurso(cursoId));
     }
 }

@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.app.Alumno.dto.NotaAgregarDto;
 import com.app.Alumno.dto.NotaDto;
+import com.app.Alumno.dto.NotaEditarDto;
 import com.app.Alumno.service.NotaService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,18 +28,25 @@ public class NotaController {
     private final NotaService notaService;
 
     @PostMapping
-    public ResponseEntity<NotaDto> crear(@RequestBody NotaDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(notaService.crear(dto));
+    public ResponseEntity<NotaDto> crear(
+            @RequestBody NotaAgregarDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(notaService.crear(dto));
     }
 
     @GetMapping("/evaluacion/{evaluacionId}")
-    public ResponseEntity<List<NotaDto>> listar(@PathVariable Long evaluacionId) {
-        return ResponseEntity.ok(notaService.listarPorEvaluacion(evaluacionId));
+    public ResponseEntity<List<NotaDto>> listar(
+            @PathVariable Long evaluacionId) {
+        return ResponseEntity.ok(
+                notaService.listarPorEvaluacion(evaluacionId));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<NotaDto> modificar(@PathVariable Long id, @RequestBody NotaDto dto) {
-        return ResponseEntity.ok(notaService.modificar(id, dto));
+    public ResponseEntity<NotaDto> editar(
+            @PathVariable Long id,
+            @RequestBody NotaEditarDto dto) {
+        return ResponseEntity.ok(
+                notaService.editar(id, dto));
     }
 
     @DeleteMapping("/{id}")

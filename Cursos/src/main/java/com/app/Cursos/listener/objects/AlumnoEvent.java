@@ -7,10 +7,9 @@ import lombok.ToString;
 @ToString
 public class AlumnoEvent {
 
-	private long alumnoId;
-	
-	private long cursoId;
-	
-	
-	
+    private Long alumnoId;
+
+    private Long cursoId;
+
+    private String tipo;
 }
