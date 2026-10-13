@@ -38,4 +38,13 @@ public class JwtProvider {
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+    
+    public String getRol(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSignKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("rol", String.class);
+    }
 }

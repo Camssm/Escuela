@@ -8,6 +8,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.app.Administracion.repository.AdministracionRepository;
 import com.app.Alumno.dto.CursosDto;
 import com.app.Alumno.dto.EvaluacionAgregarDto;
 import com.app.Alumno.dto.EvaluacionDto;
@@ -23,9 +24,10 @@ public class EvaluacionServiceImp implements EvaluacionService {
 
 	private final EvaluacionRepository evaluacionRepository;
 	private final RestTemplate restTemplate;
-
+	private final AdministracionRepository administracionRepository;
+	
 	@Override
-	public EvaluacionDto crear(EvaluacionAgregarDto dto) {
+	public EvaluacionDto crear(EvaluacionAgregarDto dto, String username) {
 
 		CursosDto curso;
 		try {

@@ -1,10 +1,19 @@
 package com.escuela.gateway.config;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+
+import io.jsonwebtoken.Claims;
+import reactor.core.publisher.Mono;
 
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
@@ -21,27 +30,77 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
     @Override
     public GatewayFilter apply(Config config) {
-        return ((exchange, chain) -> {
-            if (validator.isSecured.test(exchange.getRequest())) {
-                if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                    throw new RuntimeException("Falta la cabecera de autorizacion");
-                }
+        return (exchange, chain) -> {
 
-                String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
-                if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                    authHeader = authHeader.substring(7);
-                }
-                try {
-                    jwtUtil.validateToken(authHeader);
-                } catch (Exception e) {
-                    throw new RuntimeException("Acceso no autorizado a la aplicacion");
-                }
+            ServerHttpRequest request = exchange.getRequest();
+
+            if (HttpMethod.OPTIONS.equals(request.getMethod()) || !validator.isSecured.test(request)) {
+                return chain.filter(exchange);
             }
-            return chain.filter(exchange);
-        });
+
+            String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return responder(exchange, HttpStatus.UNAUTHORIZED);
+            }
+
+            Claims claims;
+            try {
+                claims = jwtUtil.getClaims(authHeader.substring(7));
+            } catch (Exception e) {
+                return responder(exchange, HttpStatus.UNAUTHORIZED);
+            }
+
+            String rol = claims.get("rol", String.class);
+            String username = claims.getSubject();
+
+            if (rol == null || !permitido(rol, request.getMethod(), request.getURI().getPath())) {
+                return responder(exchange, HttpStatus.FORBIDDEN);
+            }
+
+            ServerHttpRequest nueva = request.mutate()
+                    .headers(h -> {
+                        h.remove("X-User-Rol");
+                        h.remove("X-User-Username");
+                        h.add("X-User-Rol", rol);
+                        h.add("X-User-Username", username);
+                    })
+                    .build();
+
+            return chain.filter(exchange.mutate().request(nueva).build());
+        };
+    }
+
+    private boolean permitido(String rol, HttpMethod method, String path) {
+        boolean lectura = HttpMethod.GET.equals(method);
+
+        if (path.startsWith("/api/alumnos")) {
+            return lectura
+                    ? List.of("PRECEPTOR", "DIRECTOR", "DOCENTE", "ADMINISTRATIVO").contains(rol)
+                    : rol.equals("PRECEPTOR");
+        }
+        if (path.startsWith("/api/cursos")) {
+            return lectura
+                    ? true
+                    : List.of("ROOT", "PRECEPTOR").contains(rol);
+        }
+        if (path.startsWith("/api/evaluaciones") || path.startsWith("/api/notas")) {
+            return lectura
+                    ? List.of("DOCENTE", "DIRECTOR").contains(rol)
+                    : rol.equals("DOCENTE");
+        }
+        if (path.startsWith("/api/administracion")) {
+            return lectura
+                    ? List.of("ROOT", "ADMINISTRATIVO", "DIRECTOR").contains(rol)
+                    : List.of("ROOT", "ADMINISTRATIVO").contains(rol);
+        }
+        return false;
+    }
+
+    private Mono<Void> responder(ServerWebExchange exchange, HttpStatus status) {
+        exchange.getResponse().setStatusCode(status);
+        return exchange.getResponse().setComplete();
     }
 
     public static class Config {
-
     }
 }

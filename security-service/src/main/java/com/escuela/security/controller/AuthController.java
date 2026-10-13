@@ -1,5 +1,6 @@
 package com.escuela.security.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.escuela.security.dto.AuthRequest;
 import com.escuela.security.dto.AuthResponse;
+import com.escuela.security.dto.UsuarioRequest;
 import com.escuela.security.entity.Usuario;
 import com.escuela.security.repository.UsuarioRepository;
 import com.escuela.security.service.JwtProvider;
@@ -48,5 +50,44 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body("Credenciales incorrectas");
+    }
+
+    @Operation(summary = "Crear usuario")
+    @PostMapping("/usuarios")
+    public ResponseEntity<?> crearUsuario(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestBody UsuarioRequest request) {
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Falta el token");
+        }
+
+        String rolQuienCrea;
+        try {
+            rolQuienCrea = jwtProvider.getRol(authHeader.substring(7));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido");
+        }
+
+        if (!"ROOT".equals(rolQuienCrea)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Solo Root puede crear usuarios");
+        }
+
+        List<String> rolesValidos = List.of("ROOT", "ADMINISTRATIVO", "DOCENTE", "DIRECTOR", "PRECEPTOR");
+        if (!rolesValidos.contains(request.getRol())) {
+            return ResponseEntity.badRequest().body("Rol inválido");
+        }
+
+        if (usuarioRepository.existsByUsername(request.getUsername())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("El usuario ya existe");
+        }
+
+        Usuario nuevo = new Usuario();
+        nuevo.setUsername(request.getUsername());
+        nuevo.setPassword(passwordEncoder.encode(request.getPassword()));
+        nuevo.setRol(request.getRol());
+        usuarioRepository.save(nuevo);
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

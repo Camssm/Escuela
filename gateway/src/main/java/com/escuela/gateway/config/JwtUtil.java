@@ -1,5 +1,6 @@
 package com.escuela.gateway.config;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -28,5 +29,12 @@ public class JwtUtil {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
 
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+    public Claims getClaims(final String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSignKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

@@ -7,7 +7,7 @@ import com.app.Alumno.dto.EvaluacionDto;
 
 public interface EvaluacionService {
 
-    EvaluacionDto crear(EvaluacionAgregarDto dto);
-
+    EvaluacionDto crear(EvaluacionAgregarDto dto, String username);
+    
     List<EvaluacionDto> listarPorCurso(Long cursoId);
 }
