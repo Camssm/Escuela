@@ -25,18 +25,17 @@ public class JwtProvider {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    public String createToken(String username, String rol) {
 
-    public String createToken(String username, String role) {
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + expirationTime);
 
-    	Date now = new Date();
-    	Date validity = new Date(now.getTime() + expirationTime);
-
-    	return Jwts.builder()
-    			.setSubject(username)
-            	.claim("role", role)
-            	.setIssuedAt(now)
-            	.setExpiration(validity)
-            	.signWith(getSignKey(), SignatureAlgorithm.HS256)
-            	.compact();
-	}
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("rol", rol)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
 }

@@ -15,4 +15,6 @@ public interface AdministracionService {
     AdministracionDto obtenerPorId(int id) throws Exception;
 
     void editar(IMapper<Administracion> mapper) throws Exception;
+
+    boolean esDocente(int id);
 }

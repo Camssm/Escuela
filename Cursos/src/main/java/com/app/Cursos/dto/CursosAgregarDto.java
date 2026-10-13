@@ -12,24 +12,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CursosAgregarDto implements IMapper<Cursos> {
 
-    private String materia;
-    private String nombreMaestro;
-    private Long docenteId;
-    private String horario;
-    private int cupo;
+	private Long docenteId;
+	private String materia;
+	private String horario;
+	private int cupo;
 
-    @Override
-    public Cursos mapperTo() {
+	@Override
+	public Cursos mapperTo() {
 
-        Cursos curso = new Cursos(
-            materia,
-            nombreMaestro,
-            horario,
-            cupo
-        );
+		Cursos curso = new Cursos(materia, horario, cupo);
 
-        curso.setDocenteId(docenteId);
+		curso.setDocenteId(docenteId);
 
-        return curso;
-    }
+		return curso;
+	}
 }

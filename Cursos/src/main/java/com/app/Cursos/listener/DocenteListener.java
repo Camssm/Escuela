@@ -19,11 +19,18 @@ public class DocenteListener {
 
     @RabbitListener(queues = "administracion.alta.queue")
     public void recibirAltaAdministracion(AdministracionEvent evento) {
+
+        System.out.println("Evento recibido: " + evento.getId() + " cargo " + evento.getCargo());
+
         if (!"DOCENTE".equals(evento.getCargo())) {
-            return;  
+            if (docenteRepository.existsById(evento.getId())) {
+                docenteRepository.deleteById(evento.getId());
+            }
+            return;
         }
+
         docenteRepository.save(new Docente(
-            evento.getId(), evento.getNombre(),
-            evento.getApellido(), evento.getEmail()));
+                evento.getId(), evento.getNombre(),
+                evento.getApellido(), evento.getEmail()));
     }
 }

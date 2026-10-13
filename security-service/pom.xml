@@ -38,6 +38,19 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
+        
+		<!-- Persistencia con JPA e Hibernate -->
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<!-- Base de datos H2 para desarrollo -->
+		<dependency>
+    		<groupId>com.h2database</groupId>
+    		<artifactId>h2</artifactId>
+    		<scope>runtime</scope>
+		</dependency>
 
         <!-- JWT (JSON Web Tokens) -->
         <dependency>

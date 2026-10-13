@@ -3,8 +3,6 @@ package com.app.Cursos.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.app.Cursos.dto.CursosDto;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,7 +20,6 @@ public class Cursos {
     private Long id;
 
     private String materia;
-    private String nombreMaestro;
 
     @Column(name = "docente_id")
     private Long docenteId;
@@ -37,19 +34,17 @@ public class Cursos {
         super();
     }
 
-    public Cursos(Long id, String materia, String nombreMaestro, String horario, int cupo) {
+    public Cursos(Long id, String materia, String horario, int cupo) {
         super();
         this.id = id;
         this.materia = materia;
-        this.nombreMaestro = nombreMaestro;
         this.horario = horario;
         this.cupo = cupo;
     }
 
-    public Cursos(String materia, String nombreMaestro, String horario, int cupo) {
+    public Cursos(String materia, String horario, int cupo) {
         super();
         this.materia = materia;
-        this.nombreMaestro = nombreMaestro;
         this.horario = horario;
         this.cupo = cupo;
     }
@@ -68,14 +63,6 @@ public class Cursos {
 
     public void setMateria(String materia) {
         this.materia = materia;
-    }
-
-    public String getNombreMaestro() {
-        return nombreMaestro;
-    }
-
-    public void setNombreMaestro(String nombreMaestro) {
-        this.nombreMaestro = nombreMaestro;
     }
 
     public Long getDocenteId() {
