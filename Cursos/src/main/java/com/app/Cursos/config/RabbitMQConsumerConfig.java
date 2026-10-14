@@ -13,33 +13,48 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConsumerConfig {
 
-    public static final String EXCHANGE = "alumno.exchange";
-    public static final String QUEUE = "alumno.alta.queue";
-    public static final String ROUTING_KEY = "alumno.alta.routingkey";
-    public static final String ADMIN_QUEUE = "administracion.alta.queue";
+	public static final String EXCHANGE = "alumno.exchange";
+	public static final String QUEUE = "alumno.eventos.queue";
+	public static final String ROUTING_KEY = "alumno.eventos.routingkey";
 
-    @Bean
-    public Queue queue() {
-        return new Queue(QUEUE, true); 
-    }
+	public static final String ADMIN_EXCHANGE = "administracion.exchange";
+	public static final String ADMIN_QUEUE = "administracion.eventos.queue";
+	public static final String ADMIN_ROUTING_KEY = "administracion.eventos.routingkey";
 
-    @Bean
-    public Queue administracionQueue() {
-        return new Queue(ADMIN_QUEUE, true); 
-    }
+	@Bean
+	public Queue alumnoQueue() {
+		return new Queue(QUEUE, true);
+	}
 
-    @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(EXCHANGE);
-    }
+	@Bean
+	public TopicExchange alumnoExchange() {
+		return new TopicExchange(EXCHANGE);
+	}
 
-    @Bean
-    public Binding binding(@Qualifier("queue") Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
-    }
+	@Bean
+	public Binding alumnoBinding(@Qualifier("alumnoQueue") Queue queue,
+			@Qualifier("alumnoExchange") TopicExchange exchange) {
+		return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
+	}
 
-    @Bean
-    public MessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
-    }
+	@Bean
+	public Queue administracionQueue() {
+		return new Queue(ADMIN_QUEUE, true);
+	}
+
+	@Bean
+	public TopicExchange administracionExchange() {
+		return new TopicExchange(ADMIN_EXCHANGE);
+	}
+
+	@Bean
+	public Binding administracionBinding(@Qualifier("administracionQueue") Queue queue,
+			@Qualifier("administracionExchange") TopicExchange exchange) {
+		return BindingBuilder.bind(queue).to(exchange).with(ADMIN_ROUTING_KEY);
+	}
+
+	@Bean
+	public MessageConverter jsonMessageConverter() {
+		return new Jackson2JsonMessageConverter();
+	}
 }

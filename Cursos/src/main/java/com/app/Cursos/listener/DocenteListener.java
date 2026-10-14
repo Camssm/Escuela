@@ -17,7 +17,7 @@ public class DocenteListener {
 
     private final DocenteRepository docenteRepository;
 
-    @RabbitListener(queues = "administracion.alta.queue")
+    @RabbitListener(queues = "administracion.eventos.queue")
     public void recibirAltaAdministracion(AdministracionEvent evento) {
 
         System.out.println("Evento recibido: " + evento.getId() + " cargo " + evento.getCargo());

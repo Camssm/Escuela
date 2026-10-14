@@ -22,7 +22,7 @@ public class CursoListener {
     private final CursosRepository cursosRepository;
     private final AlumnoRepository alumnoRepository;
 
-    @RabbitListener(queues = "alumno.alta.queue")
+    @RabbitListener(queues = "alumno.eventos.queue")
     @Transactional
     public void recibirAltaAlumno(AlumnoEvent evento) {
 

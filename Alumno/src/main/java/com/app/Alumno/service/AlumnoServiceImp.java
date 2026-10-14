@@ -67,7 +67,8 @@ public class AlumnoServiceImp implements AlumnoService {
 		} catch (HttpClientErrorException.NotFound e) {
 			throw new BusinessException("P-404", HttpStatus.NOT_FOUND, "No existe el curso con id: " + cursoId);
 		} catch (RestClientException e) {
-			throw new RuntimeException("No se pudo verificar el curso, intentá más tarde");
+			throw new BusinessException("P-503", HttpStatus.SERVICE_UNAVAILABLE,
+					"No se pudo verificar el curso, intentá más tarde");
 		}
 
 		List<Alumno> registros = alumnorepository.findByCursoIdAndEstado(cursoId, Estado.ASIGNADO);
@@ -100,9 +101,11 @@ public class AlumnoServiceImp implements AlumnoService {
 			try {
 				restTemplate.getForObject("http://MS-CURSOS/api/cursos/" + alumno.getCursoId(), CursosDto.class);
 			} catch (HttpClientErrorException.NotFound e) {
-				throw new RuntimeException("El curso con id " + alumno.getCursoId() + " no existe");
+				throw new BusinessException("P-404", HttpStatus.NOT_FOUND,
+						"El curso con id " + alumno.getCursoId() + " no existe");
 			} catch (RestClientException e) {
-				throw new RuntimeException("No se pudo verificar el curso, intentá más tarde");
+				throw new BusinessException("P-503", HttpStatus.SERVICE_UNAVAILABLE,
+						"No se pudo verificar el curso, intentá más tarde");
 			}
 
 			alumno.setEstado(Estado.ASIGNADO);
@@ -158,7 +161,8 @@ public class AlumnoServiceImp implements AlumnoService {
 		Alumno datosNuevos = mapper.mapperTo();
 
 		Alumno existente = alumnorepository.findById(datosNuevos.getId())
-				.orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + datosNuevos.getId()));
+				.orElseThrow(() -> new BusinessException("P-404", HttpStatus.NOT_FOUND,
+						"Alumno no encontrado con id: " + datosNuevos.getId()));
 
 		Long cursoAnterior = existente.getCursoId();
 
@@ -172,9 +176,11 @@ public class AlumnoServiceImp implements AlumnoService {
 			try {
 				restTemplate.getForObject("http://MS-CURSOS/api/cursos/" + cursoNuevo, CursosDto.class);
 			} catch (HttpClientErrorException.NotFound e) {
-				throw new RuntimeException("El curso con id " + cursoNuevo + " no existe");
+				throw new BusinessException("P-404", HttpStatus.NOT_FOUND,
+						"El curso con id " + cursoNuevo + " no existe");
 			} catch (RestClientException e) {
-				throw new RuntimeException("No se pudo verificar el curso, intentá más tarde");
+				throw new BusinessException("P-503", HttpStatus.SERVICE_UNAVAILABLE,
+						"No se pudo verificar el curso, intentá más tarde");
 			}
 		}
 
