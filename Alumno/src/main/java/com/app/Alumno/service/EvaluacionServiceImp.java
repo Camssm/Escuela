@@ -8,12 +8,13 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.app.Administracion.repository.AdministracionRepository;
 import com.app.Alumno.dto.CursosDto;
 import com.app.Alumno.dto.EvaluacionAgregarDto;
 import com.app.Alumno.dto.EvaluacionDto;
+import com.app.Alumno.entity.Administracion;
 import com.app.Alumno.entity.Evaluacion;
 import com.app.Alumno.exception.BusinessException;
+import com.app.Alumno.repository.AdministracionRepository;
 import com.app.Alumno.repository.EvaluacionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class EvaluacionServiceImp implements EvaluacionService {
 	private final EvaluacionRepository evaluacionRepository;
 	private final RestTemplate restTemplate;
 	private final AdministracionRepository administracionRepository;
-	
+
 	@Override
 	public EvaluacionDto crear(EvaluacionAgregarDto dto, String username) {
 
@@ -45,7 +46,18 @@ public class EvaluacionServiceImp implements EvaluacionService {
 					"El curso todavía no tiene un docente asignado");
 		}
 
+		Administracion docente = administracionRepository
+				.findByEmailAndCargo(username, "DOCENTE")
+				.orElseThrow(() -> new BusinessException("P-403", HttpStatus.FORBIDDEN,
+						"El usuario no está registrado como docente"));
+
+		if (!docente.getId().equals(curso.getDocenteId())) {
+			throw new BusinessException("P-403", HttpStatus.FORBIDDEN,
+					"Este curso no está asignado a tu usuario");
+		}
+
 		Evaluacion evaluacion = dto.mapperTo();
+		evaluacion.setDocenteUsername(username);
 
 		return toDto(evaluacionRepository.save(evaluacion));
 	}

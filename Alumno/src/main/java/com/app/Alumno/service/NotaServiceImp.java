@@ -27,7 +27,7 @@ public class NotaServiceImp implements NotaService {
     private final Alumnorepository alumnoRepository;
 
     @Override
-    public NotaDto crear(NotaAgregarDto dto) {
+    public NotaDto crear(NotaAgregarDto dto, String username) {
 
         Evaluacion evaluacion = evaluacionRepository
                 .findById(dto.getEvaluacionId())
@@ -36,6 +36,8 @@ public class NotaServiceImp implements NotaService {
                         HttpStatus.NOT_FOUND,
                         "Evaluación no encontrada con id: "
                                 + dto.getEvaluacionId()));
+
+        validarDocente(evaluacion, username);
 
         Alumno alumno = alumnoRepository
                 .findById(dto.getAlumnoId())
@@ -46,18 +48,17 @@ public class NotaServiceImp implements NotaService {
                                 + dto.getAlumnoId()));
 
         if (alumno.getCursoId() == null ||
-        	    !alumno.getCursoId().equals(evaluacion.getCursoId())) {
+                !alumno.getCursoId().equals(evaluacion.getCursoId())) {
 
-        	    throw new BusinessException(
-        	            "P-400",
-        	            HttpStatus.BAD_REQUEST,
-        	            "El alumno no pertenece al curso de esta evaluación"
-        	    );
-        	}
+            throw new BusinessException(
+                    "P-400",
+                    HttpStatus.BAD_REQUEST,
+                    "El alumno no pertenece al curso de esta evaluación");
+        }
 
-        	Nota nota = dto.mapperTo();
-        	nota.setEvaluacion(evaluacion);
-        	nota.setAlumno(alumno);
+        Nota nota = dto.mapperTo();
+        nota.setEvaluacion(evaluacion);
+        nota.setAlumno(alumno);
 
         return toDto(notaRepository.save(nota));
     }
@@ -71,7 +72,7 @@ public class NotaServiceImp implements NotaService {
     }
 
     @Override
-    public NotaDto editar(Long id, NotaEditarDto dto) {
+    public NotaDto editar(Long id, NotaEditarDto dto, String username) {
 
         if (dto.getValor() == null || dto.getValor() < 0 || dto.getValor() > 10) {
             throw new BusinessException(
@@ -80,14 +81,24 @@ public class NotaServiceImp implements NotaService {
         }
 
         Nota nota = buscar(id);
+        validarDocente(nota.getEvaluacion(), username);
         nota.setValor(dto.getValor());
 
         return toDto(notaRepository.save(nota));
     }
 
     @Override
-    public void eliminar(Long id) {
-        notaRepository.delete(buscar(id));
+    public void eliminar(Long id, String username) {
+        Nota nota = buscar(id);
+        validarDocente(nota.getEvaluacion(), username);
+        notaRepository.delete(nota);
+    }
+
+    private void validarDocente(Evaluacion evaluacion, String username) {
+        if (!username.equals(evaluacion.getDocenteUsername())) {
+            throw new BusinessException("P-403", HttpStatus.FORBIDDEN,
+                    "Esta evaluación no pertenece a tu usuario");
+        }
     }
 
     private Nota buscar(Long id) {
