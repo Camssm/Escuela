@@ -15,22 +15,22 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class DocenteListener {
 
-    private final DocenteRepository docenteRepository;
+	private final DocenteRepository docenteRepository;
 
-    @RabbitListener(queues = "administracion.eventos.queue")
-    public void recibirAltaAdministracion(AdministracionEvent evento) {
+	@RabbitListener(queues = "administracion.eventos.queue")
 
-        System.out.println("Evento recibido: " + evento.getId() + " cargo " + evento.getCargo());
+	public void recibirAltaAdministracion(AdministracionEvent evento) {
 
-        if (!"DOCENTE".equals(evento.getCargo())) {
-            if (docenteRepository.existsById(evento.getId())) {
-                docenteRepository.deleteById(evento.getId());
-            }
-            return;
-        }
+		System.out.println("Evento recibido: " + evento.getId() + " cargo " + evento.getCargo());
 
-        docenteRepository.save(new Docente(
-                evento.getId(), evento.getNombre(),
-                evento.getApellido(), evento.getEmail()));
-    }
+		if (!"DOCENTE".equals(evento.getCargo())) {
+			if (docenteRepository.existsById(evento.getId())) {
+				docenteRepository.deleteById(evento.getId());
+			}
+			return;
+		}
+
+		docenteRepository
+				.save(new Docente(evento.getId(), evento.getNombre(), evento.getApellido(), evento.getEmail()));
+	}
 }

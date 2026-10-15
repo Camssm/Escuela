@@ -40,6 +40,8 @@ public class Evaluacion {
     @Column(name = "curso_id")
     private Long cursoId;
 
+    private String docenteUsername;
+    
     @OneToMany(mappedBy = "evaluacion", cascade = CascadeType.ALL)
     private List<Nota> notas = new ArrayList<>();
 }

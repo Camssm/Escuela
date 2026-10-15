@@ -19,67 +19,59 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CursoListener {
 
-    private final CursosRepository cursosRepository;
-    private final AlumnoRepository alumnoRepository;
+	private final CursosRepository cursosRepository;
+	private final AlumnoRepository alumnoRepository;
 
-    @RabbitListener(queues = "alumno.eventos.queue")
-    @Transactional
-    public void recibirAltaAlumno(AlumnoEvent evento) {
+	@RabbitListener(queues = "alumno.eventos.queue")
 
-        if (evento.getAlumnoId() == null || evento.getCursoId() == null) {
-            System.out.println("Evento ignorado: falta alumnoId o cursoId");
-            return;
-        }
+	@Transactional
+	public void recibirAltaAlumno(AlumnoEvent evento) {
 
-        Optional<Cursos> optCurso =
-                cursosRepository.findById(evento.getCursoId());
+		if (evento.getAlumnoId() == null || evento.getCursoId() == null) {
+			System.out.println("Evento ignorado: falta alumnoId o cursoId");
+			return;
+		}
 
-        if (optCurso.isEmpty()) {
-            System.out.println(
-                "Evento ignorado: no existe el curso " + evento.getCursoId());
-            return;
-        }
+		Optional<Cursos> optCurso = cursosRepository.findById(evento.getCursoId());
 
-        Cursos curso = optCurso.get();
+		if (optCurso.isEmpty()) {
+			System.out.println("Evento ignorado: no existe el curso " + evento.getCursoId());
+			return;
+		}
 
-        Optional<Alumno> optAlumno =
-                alumnoRepository.findById(evento.getAlumnoId());
+		Cursos curso = optCurso.get();
 
-        if ("BAJA".equalsIgnoreCase(evento.getTipo())) {
+		Optional<Alumno> optAlumno = alumnoRepository.findById(evento.getAlumnoId());
 
-            if (optAlumno.isPresent()) {
-                Alumno alumno = optAlumno.get();
+		if ("BAJA".equalsIgnoreCase(evento.getTipo())) {
 
-                if (alumno.getCurso() != null
-                        && Objects.equals(alumno.getCurso().getId(), curso.getId())) {
-                    alumno.setCurso(null);
-                    alumnoRepository.save(alumno);
-                }
-            }
+			if (optAlumno.isPresent()) {
+				Alumno alumno = optAlumno.get();
 
-        } else if ("ALTA".equalsIgnoreCase(evento.getTipo())
-                || evento.getTipo() == null) {
+				if (alumno.getCurso() != null && Objects.equals(alumno.getCurso().getId(), curso.getId())) {
+					alumno.setCurso(null);
+					alumnoRepository.save(alumno);
+				}
+			}
 
-            Alumno alumno = optAlumno.orElseGet(
-                () -> new Alumno(evento.getAlumnoId()));
+		} else if ("ALTA".equalsIgnoreCase(evento.getTipo()) || evento.getTipo() == null) {
 
-            if (alumno.getCurso() != null
-                    && Objects.equals(alumno.getCurso().getId(), curso.getId())) {
-                System.out.println("El alumno ya está en ese curso");
-                return;
-            }
+			Alumno alumno = optAlumno.orElseGet(() -> new Alumno(evento.getAlumnoId()));
 
-            alumno.setCurso(curso);
-            alumnoRepository.save(alumno);
+			if (alumno.getCurso() != null && Objects.equals(alumno.getCurso().getId(), curso.getId())) {
+				System.out.println("El alumno ya está en ese curso");
+				return;
+			}
 
-        } else {
-            System.out.println("Tipo de evento desconocido: " + evento.getTipo());
-            return;
-        }
+			alumno.setCurso(curso);
+			alumnoRepository.save(alumno);
 
-        System.out.println(
-            "Evento " + evento.getTipo()
-            + " | alumno " + evento.getAlumnoId()
-            + " | curso " + evento.getCursoId());
-    }
+		} else {
+			System.out.println("Tipo de evento desconocido: " + evento.getTipo());
+			return;
+		}
+
+		System.out.println(
+				"Evento " + evento.getTipo() + " | alumno " + evento.getAlumnoId() + " | curso " + evento.getCursoId());
+	}
 }

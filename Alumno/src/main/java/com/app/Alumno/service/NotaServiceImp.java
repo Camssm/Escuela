@@ -22,88 +22,73 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NotaServiceImp implements NotaService {
 
-    private final NotaRepository notaRepository;
-    private final EvaluacionRepository evaluacionRepository;
-    private final Alumnorepository alumnoRepository;
+	private final NotaRepository notaRepository;
+	private final EvaluacionRepository evaluacionRepository;
+	private final Alumnorepository alumnoRepository;
 
-    @Override
-    public NotaDto crear(NotaAgregarDto dto) {
+	@Override
+	public NotaDto crear(NotaAgregarDto dto, String username) {
 
-        Evaluacion evaluacion = evaluacionRepository
-                .findById(dto.getEvaluacionId())
-                .orElseThrow(() -> new BusinessException(
-                        "P-404",
-                        HttpStatus.NOT_FOUND,
-                        "Evaluación no encontrada con id: "
-                                + dto.getEvaluacionId()));
+		Evaluacion evaluacion = evaluacionRepository.findById(dto.getEvaluacionId())
+				.orElseThrow(() -> new BusinessException("P-404", HttpStatus.NOT_FOUND,
+						"Evaluación no encontrada con id: " + dto.getEvaluacionId()));
 
-        Alumno alumno = alumnoRepository
-                .findById(dto.getAlumnoId())
-                .orElseThrow(() -> new BusinessException(
-                        "P-404",
-                        HttpStatus.NOT_FOUND,
-                        "Alumno no encontrado con id: "
-                                + dto.getAlumnoId()));
+		validarDocente(evaluacion, username);
 
-        if (alumno.getCursoId() == null ||
-        	    !alumno.getCursoId().equals(evaluacion.getCursoId())) {
+		Alumno alumno = alumnoRepository.findById(dto.getAlumnoId()).orElseThrow(() -> new BusinessException("P-404",
+				HttpStatus.NOT_FOUND, "Alumno no encontrado con id: " + dto.getAlumnoId()));
 
-        	    throw new BusinessException(
-        	            "P-400",
-        	            HttpStatus.BAD_REQUEST,
-        	            "El alumno no pertenece al curso de esta evaluación"
-        	    );
-        	}
+		if (alumno.getCursoId() == null || !alumno.getCursoId().equals(evaluacion.getCursoId())) {
 
-        	Nota nota = dto.mapperTo();
-        	nota.setEvaluacion(evaluacion);
-        	nota.setAlumno(alumno);
+			throw new BusinessException("P-400", HttpStatus.BAD_REQUEST,
+					"El alumno no pertenece al curso de esta evaluación");
+		}
 
-        return toDto(notaRepository.save(nota));
-    }
+		Nota nota = dto.mapperTo();
+		nota.setEvaluacion(evaluacion);
+		nota.setAlumno(alumno);
 
-    @Override
-    public List<NotaDto> listarPorEvaluacion(Long evaluacionId) {
-        return notaRepository.findByEvaluacionId(evaluacionId)
-                .stream()
-                .map(this::toDto)
-                .toList();
-    }
+		return toDto(notaRepository.save(nota));
+	}
 
-    @Override
-    public NotaDto editar(Long id, NotaEditarDto dto) {
+	@Override
+	public List<NotaDto> listarPorEvaluacion(Long evaluacionId) {
+		return notaRepository.findByEvaluacionId(evaluacionId).stream().map(this::toDto).toList();
+	}
 
-        if (dto.getValor() == null || dto.getValor() < 0 || dto.getValor() > 10) {
-            throw new BusinessException(
-                    "P-400", HttpStatus.BAD_REQUEST,
-                    "La nota debe estar entre 0 y 10");
-        }
+	@Override
+	public NotaDto editar(Long id, NotaEditarDto dto, String username) {
 
-        Nota nota = buscar(id);
-        nota.setValor(dto.getValor());
+		if (dto.getValor() == null || dto.getValor() < 0 || dto.getValor() > 10) {
+			throw new BusinessException("P-400", HttpStatus.BAD_REQUEST, "La nota debe estar entre 0 y 10");
+		}
 
-        return toDto(notaRepository.save(nota));
-    }
+		Nota nota = buscar(id);
+		validarDocente(nota.getEvaluacion(), username);
+		nota.setValor(dto.getValor());
 
-    @Override
-    public void eliminar(Long id) {
-        notaRepository.delete(buscar(id));
-    }
+		return toDto(notaRepository.save(nota));
+	}
 
-    private Nota buscar(Long id) {
-        return notaRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(
-                        "P-404",
-                        HttpStatus.NOT_FOUND,
-                        "Nota no encontrada con id: " + id));
-    }
+	@Override
+	public void eliminar(Long id, String username) {
+		Nota nota = buscar(id);
+		validarDocente(nota.getEvaluacion(), username);
+		notaRepository.delete(nota);
+	}
 
-    private NotaDto toDto(Nota nota) {
-        return new NotaDto(
-                nota.getId(),
-                nota.getValor(),
-                nota.getEvaluacion().getId(),
-                nota.getAlumno().getId()
-        );
-    }
+	private void validarDocente(Evaluacion evaluacion, String username) {
+		if (!username.equals(evaluacion.getDocenteUsername())) {
+			throw new BusinessException("P-403", HttpStatus.FORBIDDEN, "Esta evaluación no pertenece a tu usuario");
+		}
+	}
+
+	private Nota buscar(Long id) {
+		return notaRepository.findById(id).orElseThrow(
+				() -> new BusinessException("P-404", HttpStatus.NOT_FOUND, "Nota no encontrada con id: " + id));
+	}
+
+	private NotaDto toDto(Nota nota) {
+		return new NotaDto(nota.getId(), nota.getValor(), nota.getEvaluacion().getId(), nota.getAlumno().getId());
+	}
 }

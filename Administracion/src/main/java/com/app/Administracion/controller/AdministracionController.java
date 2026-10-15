@@ -23,42 +23,42 @@ import com.app.Administracion.service.AdministracionService;
 @RequestMapping("/api/administracion")
 public class AdministracionController {
 
-    @Autowired
-    private AdministracionService administracionService;
+	@Autowired
+	private AdministracionService administracionService;
 
-    @RequestMapping(value = "/Administracion", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<AdministracionDto>> listar() throws Exception {
-        List<AdministracionDto> administraciones = administracionService.listar();
-        return ResponseEntity.ok(administraciones);
-    }
+	@RequestMapping(value = "/Administracion", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<AdministracionDto>> listar() throws Exception {
+		List<AdministracionDto> administraciones = administracionService.listar();
+		return ResponseEntity.ok(administraciones);
+	}
 
-    @RequestMapping(value = "/agregar", method = RequestMethod.PUT)
-    public ResponseEntity<?> agregar(
-            @RequestBody AdministracionAltaDto administracionDto) throws Exception {
+	@RequestMapping(value = "/agregar", method = RequestMethod.PUT)
+	public ResponseEntity<?> agregar(@RequestBody AdministracionAltaDto administracionDto) throws Exception {
 
-        administracionService.agregar(administracionDto);
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
+		administracionService.agregar(administracionDto);
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
 
-    @RequestMapping(value = "/buscar", method = RequestMethod.GET)
-    public ResponseEntity<AdministracionDto> buscar(@RequestParam int id) throws Exception {
-        AdministracionDto administracion = administracionService.obtenerPorId(id);
+	@RequestMapping(value = "/buscar", method = RequestMethod.GET)
+	public ResponseEntity<AdministracionDto> buscar(@RequestParam int id) throws Exception {
+		AdministracionDto administracion = administracionService.obtenerPorId(id);
 
-        if (administracion == null) {
-            throw new BusinessException("P-404", HttpStatus.NOT_FOUND,
-                    "Administrativo no encontrado con id: " + id
-            );
-        }
+		if (administracion == null) {
+			throw new BusinessException("P-404", HttpStatus.NOT_FOUND, "Administrativo no encontrado con id: " + id);
+		}
 
-        return ResponseEntity.ok(administracion);
-    }
+		return ResponseEntity.ok(administracion);
+	}
 
-    @RequestMapping(value = "/editar", method = RequestMethod.PUT)
-    public ResponseEntity<?> editar(
-            @RequestBody AdministracionEditarDto administracionDto) throws Exception {
+	@RequestMapping(value = "/editar", method = RequestMethod.PUT)
+	public ResponseEntity<?> editar(@RequestBody AdministracionEditarDto administracionDto) throws Exception {
 
-        administracionService.editar(administracionDto);
-        return ResponseEntity.ok().build();
-    }
-    
+		administracionService.editar(administracionDto);
+		return ResponseEntity.ok().build();
+	}
+
+	@RequestMapping(value = "/docente/{id}", method = RequestMethod.GET)
+	public ResponseEntity<Boolean> esDocente(@PathVariable int id) {
+		return ResponseEntity.ok(administracionService.esDocente(id));
+	}
 }

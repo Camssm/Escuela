@@ -62,8 +62,8 @@ public class CursosServiceImp implements CursosService {
 			dto.setCupo(curso.getCupo());
 
 			if (curso.getDocenteId() != null) {
-				docenteRepository.findById(curso.getDocenteId()).ifPresent(d ->
-						dto.setNombreMaestro(d.getNombre() + " " + d.getApellido()));
+				docenteRepository.findById(curso.getDocenteId())
+						.ifPresent(d -> dto.setNombreMaestro(d.getNombre() + " " + d.getApellido()));
 			}
 
 			dtos.add(dto);
@@ -87,8 +87,8 @@ public class CursosServiceImp implements CursosService {
 		dto.setCupo(curso.getCupo());
 
 		if (curso.getDocenteId() != null) {
-			docenteRepository.findById(curso.getDocenteId()).ifPresent(d ->
-					dto.setNombreMaestro(d.getNombre() + " " + d.getApellido()));
+			docenteRepository.findById(curso.getDocenteId())
+					.ifPresent(d -> dto.setNombreMaestro(d.getNombre() + " " + d.getApellido()));
 		}
 
 		return dto;
@@ -104,9 +104,7 @@ public class CursosServiceImp implements CursosService {
 		}
 
 		Cursos existente = cursosRepository.findById(datosNuevos.getId())
-				.orElseThrow(() -> new BusinessException(
-						"P-404",
-						HttpStatus.NOT_FOUND,
+				.orElseThrow(() -> new BusinessException("P-404", HttpStatus.NOT_FOUND,
 						"Curso no encontrado con id: " + datosNuevos.getId()));
 
 		validarDocente(datosNuevos.getDocenteId());
@@ -148,18 +146,14 @@ public class CursosServiceImp implements CursosService {
 		dto.setCupo(curso.getCupo());
 
 		if (curso.getDocenteId() != null) {
-		    docenteRepository.findById(curso.getDocenteId()).ifPresent(d ->
-		            dto.setNombreMaestro(d.getNombre() + " " + d.getApellido()));
+			docenteRepository.findById(curso.getDocenteId())
+					.ifPresent(d -> dto.setNombreMaestro(d.getNombre() + " " + d.getApellido()));
 		}
-		
+
 		try {
-			List<AlumnoDto> alumnos = restTemplate
-					.exchange("http://MS-ALUMNOS/api/alumnos/curso/" + id,
-							HttpMethod.GET,
-							null,
-							new ParameterizedTypeReference<List<AlumnoDto>>() {
-							})
-					.getBody();
+			List<AlumnoDto> alumnos = restTemplate.exchange("http://MS-ALUMNOS/api/alumnos/curso/" + id, HttpMethod.GET,
+					null, new ParameterizedTypeReference<List<AlumnoDto>>() {
+					}).getBody();
 
 			dto.setAlumnos(alumnos != null ? alumnos : new ArrayList<>());
 
@@ -176,17 +170,30 @@ public class CursosServiceImp implements CursosService {
 
 	private void validarDocente(Long docenteId) {
 
-	    if (docenteId == null || docenteId <= 0) {
-	        throw new RequestException("P-400", "El ID del docente es obligatorio");
-	    }
+		if (docenteId == null || docenteId <= 0) {
+			throw new RequestException("P-400", "El ID del docente es obligatorio");
+		}
 
-	    if (!docenteRepository.existsById(docenteId)) {
-	        throw new RequestException("P-400", "El ID ingresado no corresponde a un docente");
-	    }
+		Boolean esDocente;
+
+		try {
+			esDocente = restTemplate.getForObject("http://MS-ADMINISTRACION/api/administracion/docente/" + docenteId,
+					Boolean.class);
+
+		} catch (HttpClientErrorException.NotFound e) {
+			throw new RequestException("P-400", "El ID ingresado no corresponde a un docente");
+		} catch (RestClientException e) {
+			throw new BusinessException("P-503", HttpStatus.SERVICE_UNAVAILABLE,
+					"No se pudo validar el docente, intentá más tarde");
+		}
+
+		if (!Boolean.TRUE.equals(esDocente)) {
+			throw new RequestException("P-400", "El ID ingresado no corresponde a un docente");
+		}
 	}
-	
+
 	@Override
 	public boolean docenteTieneCursos(Long docenteId) {
-	    return cursosRepository.existsByDocenteId(docenteId);
+		return cursosRepository.existsByDocenteId(docenteId);
 	}
 }

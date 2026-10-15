@@ -10,31 +10,28 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
 	public static final String EXCHANGE = "alumno.exchange";
-    public static final String QUEUE = "alumno.eventos.queue";
-    public static final String ROUTING_KEY = "alumno.eventos.routingkey";
+	public static final String QUEUE = "alumno.eventos.queue";
+	public static final String ROUTING_KEY = "alumno.eventos.routingkey";
 
-    @Bean
-    public Queue queue() {
-        return new Queue(QUEUE, true);
-    }
+	@Bean
+	public Queue queue() {
+		return new Queue(QUEUE, true);
+	}
 
-    @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(EXCHANGE);
-    }
+	@Bean
+	public TopicExchange exchange() {
+		return new TopicExchange(EXCHANGE);
+	}
 
-    @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
-    }
+	@Bean
+	public Binding binding(Queue queue, TopicExchange exchange) {
+		return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
+	}
 
-    // Convierte automáticamente los objetos Java a JSON al enviarlos
-    @Bean
-    public MessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
-    }
-	
-	
-	
-	
+	// Convierte automáticamente los objetos Java a JSON al enviarlos
+	@Bean
+	public MessageConverter jsonMessageConverter() {
+		return new Jackson2JsonMessageConverter();
+	}
+
 }

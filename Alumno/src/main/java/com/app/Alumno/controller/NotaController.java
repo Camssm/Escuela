@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,9 +30,10 @@ public class NotaController {
 
     @PostMapping
     public ResponseEntity<NotaDto> crear(
+            @RequestHeader("X-User-Username") String username,
             @RequestBody NotaAgregarDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(notaService.crear(dto));
+                .body(notaService.crear(dto, username));
     }
 
     @GetMapping("/evaluacion/{evaluacionId}")
@@ -43,15 +45,18 @@ public class NotaController {
 
     @PutMapping("/{id}")
     public ResponseEntity<NotaDto> editar(
+            @RequestHeader("X-User-Username") String username,
             @PathVariable Long id,
             @RequestBody NotaEditarDto dto) {
         return ResponseEntity.ok(
-                notaService.editar(id, dto));
+                notaService.editar(id, dto, username));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        notaService.eliminar(id);
+    public ResponseEntity<Void> eliminar(
+            @RequestHeader("X-User-Username") String username,
+            @PathVariable Long id) {
+        notaService.eliminar(id, username);
         return ResponseEntity.noContent().build();
     }
 }

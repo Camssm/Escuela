@@ -14,27 +14,28 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
-    @Value("${jwt.secret}")
-    private String secret;
+	@Value("${jwt.secret}")
+	private String secret;
 
-    @Value("${jwt.expiration}")
-    private long expirationTime;
+	@Value("${jwt.expiration}")
+	private long expirationTime;
 
-    private Key getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
+	private Key getSignKey() {
+		byte[] keyBytes = Decoders.BASE64.decode(secret);
+		return Keys.hmacShaKeyFor(keyBytes);
+	}
 
-    public String createToken(String username) {
+	public String createToken(String username, String rol) {
 
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + expirationTime);
+		Date now = new Date();
+		Date validity = new Date(now.getTime() + expirationTime);
 
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(now)
-                .setExpiration(validity)
-                .signWith(getSignKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
+		return Jwts.builder().setSubject(username).claim("rol", rol).setIssuedAt(now).setExpiration(validity)
+				.signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
+	}
+
+	public String getRol(String token) {
+		return Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody().get("rol",
+				String.class);
+	}
 }
