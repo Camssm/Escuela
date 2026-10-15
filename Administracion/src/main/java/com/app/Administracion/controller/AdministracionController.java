@@ -57,8 +57,4 @@ public class AdministracionController {
 		return ResponseEntity.ok().build();
 	}
 
-	@RequestMapping(value = "/docente/{id}", method = RequestMethod.GET)
-	public ResponseEntity<Boolean> esDocente(@PathVariable int id) {
-		return ResponseEntity.ok(administracionService.esDocente(id));
-	}
 }

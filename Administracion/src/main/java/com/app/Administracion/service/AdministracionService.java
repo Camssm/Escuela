@@ -16,5 +16,4 @@ public interface AdministracionService {
 
     void editar(IMapper<Administracion> mapper) throws Exception;
 
-    boolean esDocente(int id);
 }

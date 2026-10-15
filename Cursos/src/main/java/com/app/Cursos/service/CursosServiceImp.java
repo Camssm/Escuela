@@ -169,25 +169,10 @@ public class CursosServiceImp implements CursosService {
 	}
 
 	private void validarDocente(Long docenteId) {
-
 		if (docenteId == null || docenteId <= 0) {
 			throw new RequestException("P-400", "El ID del docente es obligatorio");
 		}
-
-		Boolean esDocente;
-
-		try {
-			esDocente = restTemplate.getForObject("http://MS-ADMINISTRACION/api/administracion/docente/" + docenteId,
-					Boolean.class);
-
-		} catch (HttpClientErrorException.NotFound e) {
-			throw new RequestException("P-400", "El ID ingresado no corresponde a un docente");
-		} catch (RestClientException e) {
-			throw new BusinessException("P-503", HttpStatus.SERVICE_UNAVAILABLE,
-					"No se pudo validar el docente, intentá más tarde");
-		}
-
-		if (!Boolean.TRUE.equals(esDocente)) {
+		if (!docenteRepository.existsById(docenteId)) {
 			throw new RequestException("P-400", "El ID ingresado no corresponde a un docente");
 		}
 	}

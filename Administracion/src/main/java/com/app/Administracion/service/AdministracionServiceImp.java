@@ -140,11 +140,5 @@ public class AdministracionServiceImp implements AdministracionService {
 
 		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, event);
 	}
-
-	@Override
-	public boolean esDocente(int id) {
-		return administracionRepository.findById(id).map(administracion -> administracion.getCargo() == Cargo.DOCENTE)
-				.orElse(false);
-	}
-
+	
 }

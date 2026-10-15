@@ -9,6 +9,5 @@ public interface AdministracionRepository extends JpaRepository<Administracion, 
 
     Optional<Administracion> findByEmailAndCargo(String email, String cargo);
     
-    boolean existsByIdAndCargo(Long id, String cargo);
 
 }
