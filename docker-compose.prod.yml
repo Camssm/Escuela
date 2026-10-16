@@ -1,0 +1,165 @@
+version: '3.8'
+
+services:
+
+  eurekaserver:
+    build:
+      context: .
+      dockerfile: ./registry/Dockerfile
+    container_name: eurekaserver
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - escuela-network
+
+  configserver:
+    build:
+      context: .
+      dockerfile: ./springconfigserver/Dockerfile
+    container_name: configserver
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eurekaserver
+    networks:
+      - escuela-network
+
+  mysql:
+    image: mysql:8.4
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:escuelaRoot2026}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - escuela-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  admin-service:
+    build:
+      context: .
+      dockerfile: ./admin-service/Dockerfile
+    container_name: admin-service
+    ports:
+      - "9090:9090"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eurekaserver
+      - configserver
+    networks:
+      - escuela-network
+
+  security-service:
+    build:
+      context: .
+      dockerfile: ./security-service/Dockerfile
+    container_name: security-service
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eurekaserver
+      - configserver
+      - mysql:
+          condition: service_healthy
+    networks:
+      - escuela-network
+
+  ms-cursos:
+    build:
+      context: .
+      dockerfile: ./Cursos/Dockerfile
+    container_name: ms-cursos
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eurekaserver
+      - configserver
+      - mysql:
+          condition: service_healthy
+    networks:
+      - escuela-network
+
+  ms-alumnos:
+    build:
+      context: .
+      dockerfile: ./Alumno/Dockerfile
+    container_name: ms-alumnos
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eurekaserver
+      - configserver
+      - mysql:
+          condition: service_healthy
+    networks:
+      - escuela-network
+
+  ms-administracion:
+    build:
+      context: .
+      dockerfile: ./Administracion/Dockerfile
+    container_name: ms-administracion
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eurekaserver
+      - configserver
+      - mysql:
+          condition: service_healthy
+    networks:
+      - escuela-network
+
+  gateway:
+    build:
+      context: .
+      dockerfile: ./gateway/Dockerfile
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eurekaserver
+      - configserver
+      - ms-cursos
+      - ms-alumnos
+      - ms-administracion
+      - security-service
+    networks:
+      - escuela-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - escuela-network
+
+volumes:
+  mysql_data:
+
+networks:
+  escuela-network:
+    driver: bridge

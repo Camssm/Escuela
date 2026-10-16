@@ -1,10 +1,19 @@
-server:
-  port: 8080
-
 spring:
   application:
     name: gateway
   profiles:
-    active: dev
+    default: dev
+
+---
+spring:
   config:
-    import: "optional:configserver:http://localhost:8888"
+    activate:
+      on-profile: dev
+    import: "configserver:http://configserver:8888"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+    import: "configserver:http://configserver:8888"

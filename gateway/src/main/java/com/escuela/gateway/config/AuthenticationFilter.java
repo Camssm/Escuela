@@ -60,8 +60,10 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 			ServerHttpRequest nueva = request.mutate().headers(h -> {
 				h.remove("X-User-Rol");
 				h.remove("X-User-Username");
+				h.remove("X-Gateway-Secret");
 				h.add("X-User-Rol", rol);
 				h.add("X-User-Username", username);
+				h.add("X-Gateway-Secret", "ApoloRuben2026");
 			}).build();
 
 			return chain.filter(exchange.mutate().request(nueva).build());
