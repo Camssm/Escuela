@@ -17,7 +17,7 @@ public class AdministracionListener {
 
 	private final AdministracionRepository administracionRepository;
 
-	@RabbitListener(queues = "administracion.alumno.queue")
+	@RabbitListener(queues = "administracion.eventos.queue")
 	public void recibirAltaAdministracion(AdministracionEvent evento) {
 		administracionRepository.save(new Administracion(
 				evento.getId(), evento.getNombre(), evento.getApellido(),
