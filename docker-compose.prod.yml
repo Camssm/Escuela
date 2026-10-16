@@ -32,19 +32,15 @@ services:
     image: mysql:8.4
     container_name: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:escuelaRoot2026}
+      MYSQL_ROOT_PASSWORD: escuelaRoot2026
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
     networks:
       - escuela-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   admin-service:
     build:
@@ -55,9 +51,12 @@ services:
       - "9090:9090"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_RABBITMQ_HOST=rabbitmq
     depends_on:
       - eurekaserver
       - configserver
+      - mysql
+      - rabbitmq
     networks:
       - escuela-network
 
@@ -67,14 +66,15 @@ services:
       dockerfile: ./security-service/Dockerfile
     container_name: security-service
     ports:
-      - "8085:8085"
+      - "8085:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_RABBITMQ_HOST=rabbitmq
     depends_on:
       - eurekaserver
       - configserver
-      - mysql:
-          condition: service_healthy
+      - mysql
+      - rabbitmq
     networks:
       - escuela-network
 
@@ -87,11 +87,12 @@ services:
       - "8081:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_RABBITMQ_HOST=rabbitmq
     depends_on:
       - eurekaserver
       - configserver
-      - mysql:
-          condition: service_healthy
+      - mysql
+      - rabbitmq
     networks:
       - escuela-network
 
@@ -104,11 +105,12 @@ services:
       - "8082:8082"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_RABBITMQ_HOST=rabbitmq
     depends_on:
       - eurekaserver
       - configserver
-      - mysql:
-          condition: service_healthy
+      - mysql
+      - rabbitmq
     networks:
       - escuela-network
 
@@ -121,11 +123,12 @@ services:
       - "8083:8083"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_RABBITMQ_HOST=rabbitmq
     depends_on:
       - eurekaserver
       - configserver
-      - mysql:
-          condition: service_healthy
+      - mysql
+      - rabbitmq
     networks:
       - escuela-network
 
@@ -138,6 +141,7 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_RABBITMQ_HOST=rabbitmq
     depends_on:
       - eurekaserver
       - configserver
@@ -145,6 +149,7 @@ services:
       - ms-alumnos
       - ms-administracion
       - security-service
+      - rabbitmq
     networks:
       - escuela-network
 

@@ -8,7 +8,14 @@ spring:
     activate:
       on-profile: dev
     import: "configserver:http://configserver:8888"
-
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: "health,info"
+    security:
+      enabled: false
+          
 ---
 spring:
   config:

@@ -1,23 +1,14 @@
+
 spring:
   application:
     name: admin-service
-  server:
-    port: 9090
-  eureka:
-    client:
-      service-url:
-        defaultZone: http://eurekaserver:8761/eureka/
-    instance:
-      prefer-ip-address: true
 
----
-spring:
-  config:
-    activate:
-      on-profile: dev
+server:
+  port: 9090
 
----
-spring:
-  config:
-    activate:
-      on-profile: docker
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eurekaserver:8761/eureka/
+  instance:
+    prefer-ip-address: true
