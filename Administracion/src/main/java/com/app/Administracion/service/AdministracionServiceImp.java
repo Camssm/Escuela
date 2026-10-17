@@ -140,5 +140,5 @@ public class AdministracionServiceImp implements AdministracionService {
 
 		rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, event);
 	}
-	
+
 }

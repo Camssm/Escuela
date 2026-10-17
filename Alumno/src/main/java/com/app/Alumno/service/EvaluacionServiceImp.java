@@ -46,10 +46,18 @@ public class EvaluacionServiceImp implements EvaluacionService {
 					"El curso todavía no tiene un docente asignado");
 		}
 
+		System.out.println("Username recibido: [" + username + "]");
+		administracionRepository.findAll().forEach(a ->
+		    System.out.println("En la tabla: id=" + a.getId()
+		        + " email=[" + a.getEmail() + "] cargo=[" + a.getCargo() + "]"));
+		
 		Administracion docente = administracionRepository.findByEmailAndCargo(username, "DOCENTE")
 				.orElseThrow(() -> new BusinessException("P-403", HttpStatus.FORBIDDEN,
 						"El usuario no está registrado como docente"));
 
+		System.out.println("ID del docente encontrado: " + docente.getId());
+		System.out.println("ID del docente asignado al curso: " + curso.getDocenteId());
+		
 		if (!docente.getId().equals(curso.getDocenteId())) {
 			throw new BusinessException("P-403", HttpStatus.FORBIDDEN, "Este curso no está asignado a tu usuario");
 		}
